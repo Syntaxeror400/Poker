@@ -43,7 +43,11 @@ package body P_Carte is
    
    function compaCombi(combi1 : T_Combinaison; combi2 : T_Combinaison) return T_CompaComplete is
    begin
-      
+      if combi1.combi <= combi2.combi then
+         
+      else
+         
+      end if;
    end;
    
    function toString(carte:T_Carte) return String is
