@@ -3,7 +3,7 @@ use P_Utils;
 
 package P_Carte is
    
-   Type T_Carte is limited private;
+   Type T_Carte is private;
    Type T_Deck is Array (Positive range <>) of T_Carte;
    Type T_Combinaison is limited private;
    
@@ -16,6 +16,7 @@ package P_Carte is
    
    function toString(carte:T_Carte) return String;
    function toString(deck:T_Deck) return String;
+   function toString(combi:T_Combinaison) return String;
    
    
 private
@@ -23,7 +24,7 @@ private
    Type T_Val is (none,val2,val3,val4,val5,val6,val7,val8,val9,val10,valV,valD,valR,valA);
    Type T_Coul is (Trefle,Carreau,Coeur,Pique);
    
-   Type T_CombElem is (CarteForte, Paire, DoublePaire, Brelan, Quint, Flush, Full, Carre, QuinteFlush);
+   Type T_CombElem is (CarteForte, Paire, DoublePaire, Brelan, Quinte, Flush, Full, Carre, QuinteFlush);
    
    Type T_Carte is record
       valeur : T_Val;
@@ -55,6 +56,10 @@ private
    function sortDeck is new trierListe(T_Element => T_Carte,
                                        T_Liste => T_Deck,
                                        comp => compSort);
+   
+   function toString(val : T_Val) return String;
+   function toString(coul : T_Coul) return String;
+   function toString(combi : T_CombElem) return String;
    
    
 end P_Carte;

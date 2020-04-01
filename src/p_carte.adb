@@ -28,9 +28,11 @@ package body P_Carte is
       i : Positive :=1;
    begin
       for coul in T_Coul loop
-         for val in T_Val loop
-            ret(i) := makeCarte(coul, val);
-            i := i+1;
+            for val in T_Val loop
+            if val /= none then
+               ret(i) := makeCarte(coul, val);
+               i := i+1;
+            end if;
          end loop;
       end loop;
       return ret;
@@ -135,7 +137,7 @@ package body P_Carte is
                         return makeCombi(Flush, sorted(1).valeur, none, none);
                      else
                         if suite then						-- Suite
-                           return makeCombi(Quint, sorted(1).valeur, none, none);
+                           return makeCombi(Quinte, sorted(1).valeur, none, none);
                         else
                            if egas(1) and egas(2) then				-- Brelan avec kicker
                               return makeCombi(Brelan, sorted(1).valeur, sorted(4).valeur, none);
@@ -233,7 +235,7 @@ package body P_Carte is
    
    function toString(carte:T_Carte) return String is
    begin
-      return T_Val'Image(carte.valeur)& " de "& T_Coul'Image(carte.couleur);
+      return toString(carte.valeur)& " de "& toString(carte.couleur);
    end;
    
    function toString(deck:T_Deck) return String is
@@ -242,12 +244,28 @@ package body P_Carte is
       str := "Deck de "& To_Unbounded_String(Integer'Image(deck'Length))& " carte(s):{";
       for i in deck'Range loop
          str := str& toString(deck(i));
-         if i+1 < deck'Last then
-            str := str& ",";
+         if i < deck'Last then
+            str := str& ", ";
          end if;
       end loop;
       str := str& "}";
       return To_String(str);
+   end;
+   
+   function toString(combi:T_Combinaison) return String is
+   begin
+      if combi.double then
+         if combi.combi = Full then
+            return toString(combi.combi)& " avec Brelan de "& toString(combi.valeur)& ", paire de "& toString(combi.valeurSec)
+              & " et avec un "&toString(combi.kicker)& " en kicker";
+         else
+            return toString(combi.combi)& " de "& toString(combi.valeur)&" et "& toString(combi.valeurSec)
+              & " et avec un "& toString(combi.kicker)& "en kicker";
+         end if;
+      else
+         return toString(combi.combi)& " de "& toString(combi.valeur)
+           &" et avec un "& toString(combi.kicker)& " en kicker";
+      end if;
    end;
    
    
@@ -314,6 +332,78 @@ package body P_Carte is
    begin
       return comparer(c1,c2) = sup;
    end;   
+   
+   function toString(val : T_Val) return String is
+   begin
+      case val is
+         when none =>
+            return "none";
+         when val2 =>
+            return "2";
+         when val3 =>
+            return "3";
+         when val4 =>
+            return "4";
+         when val5 =>
+            return "5";
+         when val6 =>
+            return "6";
+         when val7 =>
+            return "7";
+         when val8 =>
+            return "8";
+         when val9 =>
+            return "9";
+         when val10 =>
+            return "10";
+         when valV =>
+            return "Valet";
+         when valD =>
+            return "Dame";
+         when valR =>
+            return "Roi";
+         when valA =>
+            return "As";
+      end case;
+   end;
+   
+   function toString(coul : T_Coul) return String is
+   begin
+      case coul is
+         when Trefle =>
+            return "Trefle";
+         when Carreau =>
+            return "Carreau";
+         when Coeur =>
+            return "Coeur";
+         when Pique =>
+            return "Pique";
+      end case;
+   end;
+   
+   function toString(combi : T_CombElem) return String is
+   begin
+      case combi is
+         when CarteForte =>
+            return "Carte forte";
+         when Paire =>
+            return "Paire";
+         when DoublePaire =>
+            return "Double paire";
+         when Brelan =>
+            return "Brelan";
+         when Quinte =>
+            return "Quinte";
+         when Flush =>
+            return "Flush";
+         when Full =>
+            return "Full";
+         when Carre =>
+            return "Carre";
+         when QuinteFlush =>
+            return "Quinte flush";
+      end case;
+   end;
    
    
 end P_Carte;

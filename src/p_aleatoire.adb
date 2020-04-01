@@ -2,6 +2,11 @@ with Ada.Numerics.Float_Random, Ada.Containers.Vectors;
 
 package body P_Aleatoire is
    
+   procedure resetGenerator is
+   begin
+      reset(randGen);
+   end;
+   
    function getRandomElement(min : Positive; max : Positive; table : T_Liste) return T_Element is
    begin
       return table(randomPos(min,max));
@@ -29,7 +34,7 @@ package body P_Aleatoire is
    
    function randomPos(min : Positive; max : Positive) return Positive is
    begin
-      return Integer( Random(randGen)*Float(max-min) + 0.5) + min;		-- Conversion d'un Float [0, 1[ en Positive [min, max]
+      return Integer(Random(randGen)*Float(max-min)) + min;		-- Conversion d'un Float [0, 1[ en Positive [min, max]
    end;
    
 end P_Aleatoire;
