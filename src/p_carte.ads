@@ -8,10 +8,10 @@ package P_Carte is
    Type T_Combinaison is limited private;
    
    function comparer(carte1:T_Carte; carte2:T_Carte) return T_CompaComplete;
-   function clonerDeck(deck:T_Deck) return T_Deck;
+   function clonerDeck(deck :T_Deck) return T_Deck;
    function deckComplet return T_Deck;
    
-   function trouverCombinaison(cartes : T_Deck) return T_Combinaison;
+   function trouverCombinaison(deck : T_Deck) return T_Combinaison;
    function compaCombi(combi1 : T_Combinaison; combi2 : T_Combinaison) return T_CompaComplete;
    
    function toString(carte:T_Carte) return String;
@@ -51,5 +51,10 @@ private
    function compaVal(val1 : T_Val; val2 :T_Val) return T_CompaComplete;
    
    function compStrictInf(c1 : T_Carte; c2 : T_Carte) return boolean;
+   
+   function sortDeck is new trierListe(T_Element => T_Carte,
+                                       T_Liste => T_Deck,
+                                       comp => compStrictInf);
+   
    
 end P_Carte;

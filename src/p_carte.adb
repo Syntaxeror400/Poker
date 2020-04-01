@@ -37,11 +37,10 @@ package body P_Carte is
    end;
    
    function trouverCombinaison(deck : T_Deck) return T_Combinaison is
-      deckSize : Natural := 0;
+      deckSize : Natural := deck'Length;
    begin
-      deckSize := deck'Length;
       if deckSize <= 1 then							-- Deck de 1 carte
-         return makeCombi(CarteForte, deck(1).valeur,deck(1).valeur,none,none);	-- Carte forte sans kicker
+         return makeCombi(CarteForte, deck(1).valeur,none,none);	-- Carte forte sans kicker
       elsif deckSize <=2 then							-- Deck de 2 cartes
          case comparer(deck(1), deck(2)) is					-- Paire sans kicker / Carte forte avec kicker
             when ega => return makeCombi(Paire, deck(1).valeur, none, none);
@@ -61,7 +60,7 @@ package body P_Carte is
             else
                for i in 1..3 loop
                   if comps(i) = ega then					-- Paires avec kicker
-                     return makeCombi(Paire, deck(i).valeur, deck(getModOf(3,i+1)+1), none);
+                     return makeCombi(Paire, deck(i).valeur, deck(getModOf(3,i+1)+1).valeur, none);
                   end if;
                end loop;
                
@@ -147,18 +146,85 @@ package body P_Carte is
                end if;
                
                declare								-- Detection des cartes fortes
-                  function sort is new trierListe(T_Element => T_Carte,
-                                                  T_Liste => T_Deck,
-                                                  comp => compStrictInf);
-                  sorted : T_Deck := sort(deck);
+                  sorted : T_Deck := sortDeck(deck);
                begin
                   return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
                end;
             end if;
          end;
       elsif deckSize <=5 then							-- Deck de 5 cartes
+         declare
+            sortedDeck : T_Deck := sortDeck(deck);
+            couleur, suite : boolean := false;
+            
+            dComps : compArray(1..5);
+            iComps : compArray(1..5);
+         begin
+            dComps(1) := comparer(deck(1),deck(2));
+            dComps(2) := comparer(deck(2),deck(3));
+            dComps(3) := comparer(deck(3),deck(4));
+            dComps(4) := comparer(deck(4),deck(5));
+            dComps(5) := comparer(deck(5),deck(1));
+            
+            dComps(1) := comparer(deck(1),deck(3));
+            dComps(2) := comparer(deck(1),deck(4));
+            dComps(3) := comparer(deck(2),deck(4));
+            dComps(4) := comparer(deck(2),deck(5));
+            dComps(5) := comparer(deck(3),deck(5));
+            
+            couleur := deck(1).couleur = deck(2).couleur and deck(2).couleur = deck(3).couleur
+              and deck(3).couleur = deck(4).couleur and deck(4).couleur = deck(5).couleur;
+            suite := T_Val'Pred(sortedDeck(1).valeur) = sortedDeck(2).valeur and T_Val'Pred(sortedDeck(2).valeur) = sortedDeck(3).valeur
+              and T_Val'Pred(sortedDeck(3).valeur) = sortedDeck(4).valeur and T_Val'Pred(sortedDeck(4).valeur) = sortedDeck(5).valeur;
+            
+            if couleur and suite then						-- QuinteFlush
+               return makeCombi(QuinteFlush, sortedDeck(1), none, none);
+            end if;
+            
+            for i in 1..4 loop							-- Recherche de carre
+               if dComps(getModOf(i)+1)=ega and  dComps(getModOf(i+1)+1)=ega and  dComps(getModOf(i+2)+1)=ega then
+                  return makeCombi(Carre, deck(getModOf(i)+1),deck(i).valeur, none);
+               end if;
+            end loop;
+            
+            -- Detection Full A FAIRE
+            
+            if couleur then
+               return makeCombi(Flush, sortedDeck(1).valeur, none, none);
+            elsif suite then
+               return makeCombi(Quint, sortedDeck(1).valeur, none, none);
+            end if;
+         end;
       else									-- Deck de plus de 5 cartes
-         
+         declare
+            tempDeck : T_Deck(1..5);
+            ret, temp : T_Combinaison;
+         begin
+            ret := makeCombi(CarteForte, none, none, none);			-- On deeclare ret avec la combinaison la plus faible
+            
+            for i1 in 1..(deckSize-4) loop					-- On itere parmis toutes les combinaisons de 5 cartes possibles
+               tempDeck(1) := deck(i1);
+               for i2 in (i1+1)..(deckSize-3) loop
+                  tempDeck(2) := deck(i2);
+                  for i3 in (i2+1)..(deckSize-2) loop
+                     tempDeck(3) := deck(i3);
+                     for i4 in (i3+1)..(deckSize-1) loop
+                        tempDeck(4) := deck(i4);
+                        for i5 in (i4+1)..deckSize loop
+                           tempDeck(5) := deck(i5);
+                           
+                           temp := trouverCombinaison(tempDeck);		-- Si on trouve une meilleure combinaison on la garde	
+                           if compaCombi(temp, ret) = sup then
+                              ret := temp;
+                           end if;
+                        end loop;
+                     end loop;
+                  end loop;
+               end loop;
+            end loop;
+            
+            return ret;
+         end;
       end if;
    end;
    
@@ -270,7 +336,7 @@ package body P_Carte is
    function compStrictInf(c1 : T_Carte; c2 : T_Carte) return boolean is
    begin
       return comparer(c1,c2) = inf;
-   end;
+   end;   
    
    
 end P_Carte;
