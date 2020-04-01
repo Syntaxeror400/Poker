@@ -15,13 +15,4 @@ package P_Utils is
    function trierListe(liste : T_Liste) return T_Liste;
    
    
-private
-   
-   generic
-      Type T_Element is private;
-      Type T_Liste is array (Positive range <>) of T_Element;
-      with function comp(elem1 : T_Element; elem2 : T_Element) return boolean;
-   procedure prepTasGEN(liste : in out T_Liste; noeud : in Positive; max : in Positive);
-   
-   
 end P_Utils;

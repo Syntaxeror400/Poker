@@ -259,8 +259,8 @@ package body P_Carte is
             return toString(combi.combi)& " avec Brelan de "& toString(combi.valeur)& ", paire de "& toString(combi.valeurSec)
               & " et avec un "&toString(combi.kicker)& " en kicker";
          else
-            return toString(combi.combi)& " de "& toString(combi.valeur)&" et "& toString(combi.valeurSec)
-              & " et avec un "& toString(combi.kicker)& "en kicker";
+            return toString(combi.combi)& " de "& toString(combi.valeur)&" et de "& toString(combi.valeurSec)
+              & ", avec un "& toString(combi.kicker)& " en kicker";
          end if;
       else
          return toString(combi.combi)& " de "& toString(combi.valeur)
@@ -330,7 +330,7 @@ package body P_Carte is
    
    function compSort(c1 : T_Carte; c2 : T_Carte) return boolean is
    begin
-      return comparer(c1,c2) = sup;
+      return comparer(c1,c2) = inf;
    end;   
    
    function toString(val : T_Val) return String is
