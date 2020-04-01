@@ -147,6 +147,24 @@ package body P_Carte is
                end if;
                
                if dComps(1)=sup then								-- Detection cartes fortes
+                  if dComps(2)=sup then
+                     if iComps(2)=sup then
+                        return makeCombi(CarteForte, deck(1).valeur, deck(2).valeur, none);
+                     else
+                        if dComps(4)=inf then
+                           return makeCombi(CarteForte, deck(1).valeur, deck(4).valeur, none);
+                        else
+                           return makeCombi(CarteForte, deck(4).valeur, deck(1).valeur, none);
+                        end if;
+                     end if;
+                  else
+                     if iComps(3)=inf then
+                        
+                     else
+                        
+                     end if;
+                  end if;
+               else
                   
                end if;
             end if;
