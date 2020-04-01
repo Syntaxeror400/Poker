@@ -12,7 +12,7 @@ package body P_Carte is
       else
          return ega;
       end if;
-   end;      
+   end;
    
    function clonerDeck(deck:T_Deck) return T_Deck is
       ret : T_Deck(deck'Range);
@@ -97,7 +97,7 @@ package body P_Carte is
             iComps(1) := comparer(deck(1),deck(3));
             iComps(2) := comparer(deck(2),deck(4));
             
-            if dComps(1)=ega and then dComps(2)=ega and then dComps(3)=ega then	-- Carre
+            if dComps(1)=ega and then dComps(2)=ega and then dComps(3)=ega then	-- Carre sans kicker
                return makeCombi(Carre, deck(1).valeur, none,none);
             elsif dComps(1) = ega and then dComps(2) = ega then			-- Brelan 123, kicker 4
                return makeCombi(Brelan, deck(1).valeur, deck(4).valeur, none);
@@ -108,7 +108,47 @@ package body P_Carte is
             elsif dComps(4)=ega and then dComps(1)=ega then			-- Brelan 412, kicker 3
                return makeCombi(Brelan, deck(4).valeur, deck(3).valeur, none);
             else
+               for i in 1..4 loop						-- Detection des (doubles) paires directes
+                  if dComps(i)=ega then
+                     case dComps(getModOf(4,i+1)+1) is
+                     when ega =>						-- Double paire sans kicker
+                        if dComps(getModOf(4,i)+1)=sup then
+                           return makeCombi(DoublePaire, deck(i).valeur, none, deck(getModOf(4,i+1)+1).valeur);
+                        else
+                           return makeCombi(DoublePaire, deck(getModOf(4,i+1)+1).valeur, none, deck(i).valeur);
+                        end if;
+                     when inf =>						-- Paire avec kicker
+                        return makeCombi(Paire, deck(i).valeur, deck(getModOf(4,i+2)+1).valeur, none);
+                     when sup =>						-- Paire avec kicker 
+                        return makeCombi(Paire, deck(i).valeur, deck(getModOf(4,i+1)+1).valeur, none);
+                     end case;
+                  end if;
+               end loop;
                
+               if iComps(1)=ega then
+                  case iComps(2) is
+                     when ega =>						-- Double paire croisee sans kicker
+                        if dComps(1)=sup then
+                           return makeCombi(DoublePaire, deck(1).valeur, none, deck(2).valeur);
+                        else
+                           return makeCombi(DoublePaire, deck(2).valeur, none, deck(1).valeur);
+                        end if;
+                     when inf =>						-- Paire avec kicker
+                        return makeCombi(Paire, deck(1).valeur, deck(4).valeur, none);
+                     when sup=>							-- Paire avec kicker
+                        return makeCombi(Paire, deck(1).valeur, deck(2).valeur, none);
+                  end case;
+               elsif iComps(2)=ega then						--Paire avec kicker
+                  if iComps(1)=inf then
+                     return makeCombi(Paire, deck(2).valeur, deck(3).valeur, none);
+                  else
+                     return makeCombi(Paire, deck(2).valeur, deck(1).valeur, none);
+                  end if;
+               end if;
+               
+               if dComps(1)=sup then								-- Detection cartes fortes
+                  
+               end if;
             end if;
          end;
          --- Bloc 5 cartes
@@ -126,7 +166,7 @@ package body P_Carte is
          when sup => return sup;
          when inf => return inf;
          when ega =>
-            if combi1.full then
+            if combi1.double then
                case compaVal(combi1.valeurSec, combi2.valeurSec) is
                when sup => return sup;
                when inf => return inf;
@@ -175,11 +215,11 @@ package body P_Carte is
    
    function makeCombi(combi : T_CombElem; val : T_Val; kick : T_Val; valSeq : T_Val) return T_Combinaison is
    begin
-      if combi = Full then
+      if combi = Full or combi = DoublePaire then
          declare
             ret : T_Combinaison(true);
          begin
-            ret.combi := FULL;
+            ret.combi := combi;
             ret.valeur := val;
             ret.kicker := kick;
             ret.valeurSec := valSeq;
@@ -190,7 +230,7 @@ package body P_Carte is
          declare
             ret : T_Combinaison(false);
          begin
-            ret.combi := FULL;
+            ret.combi := combi;
             ret.valeur := val;
             ret.kicker := kick;
             
