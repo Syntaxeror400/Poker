@@ -39,8 +39,10 @@ package body P_Carte is
    function trouverCombinaison(deck : T_Deck) return T_Combinaison is
       deckSize : Natural := deck'Length;
    begin
-      if deckSize <= 1 then							-- Deck de 1 carte
-         return makeCombi(CarteForte, deck(1).valeur,none,none);	-- Carte forte sans kicker
+      if deckSize = 0 then							-- Deck vide
+         return makeCombi(CarteForte, none, none, none);
+      elsif deckSize <= 1 then							-- Deck de 1 carte
+         return makeCombi(CarteForte, deck(1).valeur,none,none);		-- Carte forte sans kicker
       elsif deckSize <=2 then							-- Deck de 2 cartes
          case comparer(deck(1), deck(2)) is					-- Paire sans kicker / Carte forte avec kicker
             when ega => return makeCombi(Paire, deck(1).valeur, none, none);
@@ -57,83 +59,47 @@ package body P_Carte is
             
             if egas(1) and egas(2) then						-- Brelan sans kicker
                return makeCombi(Brelan, sorted(1).valeur, none, none);
-            else								-- Paire avec kicker
-               if egas(1) then
+            else
+               if egas(1) then							-- Paire avec kicker
                   return makeCombi(Paire, sorted(1).valeur, sorted(3).valeur, none);
                elsif egas(2) then
                   return makeCombi(Paire, sorted(2).valeur, sorted(1).valeur, none);
+               else								-- Carte forte avec kicker
+                  return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
                end if;
-               									-- Carte forte avec kicker
-               return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
             end if;
          end;
       elsif deckSize <=4 then							-- Deck de 4 cartes
-         declare								-- A REFAIRE AVEC LE TRI
-            dComps : compArray(1..4);
-            iComps : compArray(1..2);
+         declare
+            sorted : T_Deck := sortDeck(deck);
+            egas : boolArray(1..3);
          begin
-            dComps(1) := comparer(deck(1),deck(2));
-            dComps(2) := comparer(deck(2),deck(3));
-            dComps(3) := comparer(deck(3),deck(4));
-            dComps(4) := comparer(deck(4),deck(1));
+            egas(1) := comparer(sorted(1),sorted(2))=ega;
+            egas(2) := comparer(sorted(2),sorted(3))=ega;
+            egas(3) := comparer(sorted(3),sorted(4))=ega;
             
-            iComps(1) := comparer(deck(1),deck(3));
-            iComps(2) := comparer(deck(2),deck(4));
-            
-            if dComps(1)=ega and then dComps(2)=ega and then dComps(3)=ega then	-- Carre sans kicker
-               return makeCombi(Carre, deck(1).valeur, none,none);
-            elsif dComps(1) = ega and then dComps(2) = ega then			-- Brelan 123, kicker 4
-               return makeCombi(Brelan, deck(1).valeur, deck(4).valeur, none);
-            elsif dComps(2)=ega and then dComps(3)=ega then			-- Brelan 234, kicker 1
-               return makeCombi(Brelan, deck(2).valeur, deck(1).valeur, none);
-            elsif dComps(3)=ega and then dComps(4)=ega then			-- Brelan 341, kicker 2
-               return makeCombi(Brelan, deck(3).valeur, deck(2).valeur, none);
-            elsif dComps(4)=ega and then dComps(1)=ega then			-- Brelan 412, kicker 3
-               return makeCombi(Brelan, deck(4).valeur, deck(3).valeur, none);
+            if egas(1) and egas(2) and egas(3) then				-- Carre sans kicker
+               return makeCombi(Carre, sorted(1).valeur, none, none);
             else
-               for i in 1..4 loop						-- Detection des (doubles) paires directes
-                  if dComps(i)=ega then
-                     case dComps(getModOf(4,i+1)+1) is
-                     when ega =>						-- Double paire sans kicker
-                        if dComps(getModOf(4,i)+1)=sup then
-                           return makeCombi(DoublePaire, deck(i).valeur, none, deck(getModOf(4,i+1)+1).valeur);
-                        else
-                           return makeCombi(DoublePaire, deck(getModOf(4,i+1)+1).valeur, none, deck(i).valeur);
-                        end if;
-                     when inf =>						-- Paire avec kicker
-                        return makeCombi(Paire, deck(i).valeur, deck(getModOf(4,i+2)+1).valeur, none);
-                     when sup =>						-- Paire avec kicker 
-                        return makeCombi(Paire, deck(i).valeur, deck(getModOf(4,i+1)+1).valeur, none);
-                     end case;
-                  end if;
-               end loop;
-               
-               if iComps(1)=ega then
-                  case iComps(2) is
-                     when ega =>						-- Double paire croisee sans kicker
-                        if dComps(1)=sup then
-                           return makeCombi(DoublePaire, deck(1).valeur, none, deck(2).valeur);
-                        else
-                           return makeCombi(DoublePaire, deck(2).valeur, none, deck(1).valeur);
-                        end if;
-                     when inf =>						-- Paire avec kicker
-                        return makeCombi(Paire, deck(1).valeur, deck(4).valeur, none);
-                     when sup=>							-- Paire avec kicker
-                        return makeCombi(Paire, deck(1).valeur, deck(2).valeur, none);
-                  end case;
-               elsif iComps(2)=ega then						--Paire avec kicker
-                  if iComps(1)=inf then
-                     return makeCombi(Paire, deck(2).valeur, deck(3).valeur, none);
-                  else
-                     return makeCombi(Paire, deck(2).valeur, deck(1).valeur, none);
+               if egas(1) and egas(2) then					-- Brelan avec kicker
+                  return makeCombi(Brelan, sorted(1).valeur, sorted(4).valeur, none);
+               elsif egas(2) and egas(3) then
+                  return makeCombi(Brelan, sorted(2).valeur, sorted(1).valeur, none);
+               else
+                  if egas(1) then						-- Double paire sans kicker
+                     if egas(3) then
+                        return makeCombi(DoublePaire, sorted(1).valeur, none, sorted(3).valeur);
+                     else							-- Paire avec kicker
+                        return makeCombi(Paire, sorted(1).valeur, sorted(3).valeur, none);
+                     end if;
+                  elsif egas(2) then
+                     return makeCombi(Paire, sorted(2).valeur, sorted(1).valeur, none);
+                  elsif egas(3) then
+                     return makeCombi(Paire, sorted(3).valeur, sorted(1).valeur, none);
+                  else								-- Carte forte avec kicker
+                     return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
                   end if;
                end if;
-               
-               declare								-- Detection des cartes fortes
-                  sorted : T_Deck := sortDeck(deck);
-               begin
-                  return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
-               end;
             end if;
          end;
       elsif deckSize <=5 then							-- Deck de 5 cartes
@@ -154,45 +120,57 @@ package body P_Carte is
             
             if couleur and suite then						-- QuinteFlush
                return makeCombi(QuinteFlush, sorted(1).valeur, none, none);
-            end if;
-            
-            if egas(1) and egas(2) and egas(3) then				-- Carre avec kicker
-               return makeCombi(Carre, sorted(1).valeur, sorted(5).valeur, none);
-            elsif egas(2) and egas(3) and egas(4) then				-- Seulement deux possibilités
-               return makeCombi(Carre, sorted(2).valeur, sorted(1).valeur, none);
-            end if;
-            
-            if egas(1) and egas(3) and egas(4) then				-- Full
-               return makeCombi(Full, sorted(3).valeur, none, sorted(1).valeur);
-            elsif egas(1) and egas(2) and egas(4) then				-- Seulement deux possibilités
-               return makeCombi(Full, sorted(1).valeur, none, sorted(4).valeur);
-            end if;
-            
-            if couleur then							-- Couleur
-               return makeCombi(Flush, sorted(1).valeur, none, none);
-            elsif suite then							-- Suite
-               return makeCombi(Quint, sorted(1).valeur, none, none);
-            end if;
-            
-            if egas(1) and egas(2) then						-- Brelan avec kicker
-               return makeCombi(Brelan, sorted(1).valeur, sorted(4).valeur, none);
-            elsif egas(2) and egas(3) then					-- Seulement trois possibilités
-               return makeCombi(Brelan, sorted(2).valeur, sorted(1).valeur, none);
-            elsif egas(3) and egas(4) then
-               return makeCombi(Brelan, sorted(3).valeur, sorted(1).valeur, none);
-            end if;
-            
-            if egas(1) then							-- Paire et double paire
-               if egas(3) then
-                  return makeCombi(DoublePaire, sorted(1).valeur, sorted(5).valeur, sorted(3).valeur);
-               elsif egas(4) then
-                  return makeCombi(DoublePaire, sorted(1).valeur, sorted(3).valeur, sorted(5).valeur);
+            else
+               if egas(1) and egas(2) and egas(3) then				-- Carre avec kicker
+                  return makeCombi(Carre, sorted(1).valeur, sorted(5).valeur, none);
+               elsif egas(2) and egas(3) and egas(4) then
+                  return makeCombi(Carre, sorted(2).valeur, sorted(1).valeur, none);
                else
-                  return makeCombi(Paire, sorted(1).valeur, sorted(3).valeur, none);
+                  if egas(1) and egas(3) and egas(4) then			-- Full
+                     return makeCombi(Full, sorted(3).valeur, none, sorted(1).valeur);
+                  elsif egas(1) and egas(2) and egas(4) then
+                     return makeCombi(Full, sorted(1).valeur, none, sorted(4).valeur);
+                  else
+                     if couleur then						-- Couleur
+                        return makeCombi(Flush, sorted(1).valeur, none, none);
+                     else
+                        if suite then						-- Suite
+                           return makeCombi(Quint, sorted(1).valeur, none, none);
+                        else
+                           if egas(1) and egas(2) then				-- Brelan avec kicker
+                              return makeCombi(Brelan, sorted(1).valeur, sorted(4).valeur, none);
+                           elsif egas(2) and egas(3) then
+                              return makeCombi(Brelan, sorted(2).valeur, sorted(1).valeur, none);
+                           elsif egas(3) and egas(4) then
+                              return makeCombi(Brelan, sorted(3).valeur, sorted(1).valeur, none);
+                           else
+                              if egas(1) then
+                                 if egas(3) then				-- Paire avec kicker et double paire avec kicker
+                                    return makeCombi(DoublePaire, sorted(1).valeur, sorted(5).valeur, sorted(3).valeur);
+                                 elsif egas(4) then
+                                    return makeCombi(DoublePaire, sorted(1).valeur, sorted(3).valeur, sorted(5).valeur);
+                                 else						
+                                    return makeCombi(Paire, sorted(1).valeur, sorted(3).valeur, none);
+                                 end if;
+                              elsif egas(2) then
+                                 if egas(4) then
+                                    return makeCombi(DoublePaire, sorted(2).valeur, sorted(1).valeur, sorted(4).valeur);
+                                 else
+                                    return makeCombi(Paire, sorted(2).valeur, sorted(1).valeur, none);
+                                 end if;
+                              elsif egas(3) then
+                                 return makeCombi(Paire, sorted(3).valeur, sorted(1).valeur, none);
+                              elsif egas(4) then
+                                 return makeCombi(Paire, sorted(4).valeur, sorted(1).valeur, none);
+                              else						-- Carte forte avec kicker
+                                 return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
+                              end if;
+                           end if;
+                        end if;
+                     end if;
+                  end if;
                end if;
             end if;
-            									-- Carte forte avec kicker
-            return makeCombi(CarteForte, sorted(1), sorted(2), none);
          end;
       else									-- Deck de plus de 5 cartes
          declare
@@ -332,9 +310,9 @@ package body P_Carte is
       end if;
    end;
    
-   function compStrictInf(c1 : T_Carte; c2 : T_Carte) return boolean is
+   function compSort(c1 : T_Carte; c2 : T_Carte) return boolean is
    begin
-      return comparer(c1,c2) = inf;
+      return comparer(c1,c2) = sup;
    end;   
    
    

@@ -50,11 +50,11 @@ private
    function compaCombElem(combi1 : T_CombElem; combi2 : T_CombElem) return T_CompaComplete;
    function compaVal(val1 : T_Val; val2 :T_Val) return T_CompaComplete;
    
-   function compStrictInf(c1 : T_Carte; c2 : T_Carte) return boolean;
+   function compSort(c1 : T_Carte; c2 : T_Carte) return boolean;
    
    function sortDeck is new trierListe(T_Element => T_Carte,
                                        T_Liste => T_Deck,
-                                       comp => compStrictInf);
+                                       comp => compSort);
    
    
 end P_Carte;
