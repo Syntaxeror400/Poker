@@ -20,8 +20,8 @@ package P_Carte is
    
 private
    
-   Type T_Val is (val2,val3,val4,val5,val6,val7,val8,val9,val10,valV,valD,valR,valA);
-   Type T_Coul is (Trefle,Carreau,Coeur,Pique);
+   Type T_Val is (none,val2,val3,val4,val5,val6,val7,val8,val9,val10,valV,valD,valR,valA);
+   Type T_Coul is (none,Trefle,Carreau,Coeur,Pique);
    
    Type T_CombElem is (CarteForte, Paire, DoublePaire, Brelan, Quint, Flush, Full, Carre, QuinteFlush);
    
@@ -30,15 +30,25 @@ private
       couleur : T_Coul;
    end record;
    
-   Type T_Combinaison is record
+   Type T_Combinaison(full : boolean := false) is record
       combi : T_CombElem;
       valeur : T_Val;
-      FullValPaire : T_Val;
-      kicker : T_Carte;
+      kicker : T_Val;
+      
+      case full is
+         when true =>
+            valeurSec : T_Val;
+         when false => null;
+      end case;
    end record;
    
    Nombre_Max_Cartes : Integer := 13*4;
    
    function makeCarte(coul : T_Coul; val : T_Val) return T_Carte;
+   function makeCombi(combi : T_CombElem; val : T_Val; kick : T_Val; valSeq : T_Val) return T_Combinaison;
+   
+   function compaCombElem(combi1 : T_CombElem; combi2 : T_CombElem) return T_CompaComplete;
+   function compaVal(val1 : T_Val; val2 :T_Val) return T_CompaComplete;
+   
    
 end P_Carte;
