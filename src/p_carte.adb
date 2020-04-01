@@ -146,31 +146,19 @@ package body P_Carte is
                   end if;
                end if;
                
-               if dComps(1)=sup then								-- Detection cartes fortes
-                  if dComps(2)=sup then
-                     if iComps(2)=sup then
-                        return makeCombi(CarteForte, deck(1).valeur, deck(2).valeur, none);
-                     else
-                        if dComps(4)=inf then
-                           return makeCombi(CarteForte, deck(1).valeur, deck(4).valeur, none);
-                        else
-                           return makeCombi(CarteForte, deck(4).valeur, deck(1).valeur, none);
-                        end if;
-                     end if;
-                  else
-                     if iComps(3)=inf then
-                        
-                     else
-                        
-                     end if;
-                  end if;
-               else
-                  
-               end if;
+               declare								-- Detection des cartes fortes
+                  function sort is new trierListe(T_Element => T_Carte,
+                                                  T_Liste => T_Deck,
+                                                  comp => compStrictInf);
+                  sorted : T_Deck := sort(deck);
+               begin
+                  return makeCombi(CarteForte, sorted(1).valeur, sorted(2).valeur, none);
+               end;
             end if;
          end;
-         --- Bloc 5 cartes
-         --- Recursivité sur >5 cartes
+      elsif deckSize <=5 then							-- Deck de 5 cartes
+      else									-- Deck de plus de 5 cartes
+         
       end if;
    end;
    
@@ -279,6 +267,10 @@ package body P_Carte is
       end if;
    end;
    
+   function compStrictInf(c1 : T_Carte; c2 : T_Carte) return boolean is
+   begin
+      return comparer(c1,c2) = inf;
+   end;
    
    
 end P_Carte;
