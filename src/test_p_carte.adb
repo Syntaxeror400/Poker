@@ -44,6 +44,19 @@ begin
          Put_Line("-----");
          Put_Line("Affichage de la meilleur combinaison trouvee dans les 7 cartes : "& toString(trouverCombinaison(cartes)));
          Put_Line("-----");
+         New_Line;
+         Put_Line("-----");
+         Put_Line("Debut du test de 100 meanges/tirages/combinaisons");
+         Put_Line("-----");
+         New_Line;
+         Put_Line("-----");
+         for i in 1..100 loop
+            shuffled := shuffle(deck'First, deck'Last, deck);
+            cartes := shuffled(1..7);
+            Put_Line("Cartes : "& toString(cartes));
+            Put_Line("Combinaison : "& toString(trouverCombinaison(cartes)));
+            Put_Line("-----");
+         end loop;
       end;
    end;
 end Test_P_Carte;
