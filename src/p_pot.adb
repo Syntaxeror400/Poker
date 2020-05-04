@@ -4,9 +4,11 @@ use Ada.Strings.Unbounded;
 package body P_Pot is
    
    procedure reset(pot : in out T_Pot; joueurs :in posArray) is
+      ret : T_Pot(joueurs'Length);
    begin
-      pot.argent := 0;
-      pot.joueurs := joueurs;
+      ret.argent := 0;
+      ret.joueurs := joueurs;
+      pot := ret;
    end;
    
    procedure addArgent(pot : in out T_Pot; montant : in Positive) is

@@ -5,13 +5,7 @@ package body P_Carte is
 
    function comparer(carte1:T_Carte; carte2:T_Carte) return T_CompaComplete is
    begin
-      if carte1.valeur > carte2.valeur then
-         return sup;
-      elsif carte1.valeur < carte2.valeur then
-         return inf;
-      else
-         return ega;
-      end if;
+      return compaVal(carte1.valeur, carte2.valeur);
    end;
    
    function clonerDeck(deck:T_Deck) return T_Deck is
@@ -37,6 +31,7 @@ package body P_Carte is
       end loop;
       return ret;
    end;
+   
    
    function trouverCombinaison(deck : T_Deck) return T_Combinaison is
       deckSize : Natural := deck'Length;
@@ -209,22 +204,22 @@ package body P_Carte is
    
    function compaCombi(combi1 : T_Combinaison; combi2 : T_Combinaison) return T_CompaComplete is
    begin
-      case compaCombElem(combi1.combi, combi2.combi) is
+      case compaCombElem(combi1.combi, combi2.combi) is				-- Comparaison du type de combinaison
       when sup => return sup;
       when inf => return inf;
       when ega =>
-         case compaVal(combi1.valeur, combi2.valeur) is
+         case compaVal(combi1.valeur, combi2.valeur) is				-- Comparaison de la valeur de la combinaison
          when sup => return sup;
          when inf => return inf;
          when ega =>
-            if combi1.double then
+            if combi1.double then						-- Si la combinaison est decrite par deux valeurs, comparaison de la deuxieme valeur
                case compaVal(combi1.valeurSec, combi2.valeurSec) is
                when sup => return sup;
                when inf => return inf;
                when ega => null;
                end case;
             end if;
-            case compaVal(combi1.kicker, combi2.kicker) is
+            case compaVal(combi1.kicker, combi2.kicker) is			-- Comparaison du kicker
                when sup => return sup;
                when inf => return inf;
                when ega => return ega;
@@ -232,6 +227,7 @@ package body P_Carte is
          end case;
       end case;
    end;
+   
    
    function toString(carte:T_Carte) return String is
    begin
@@ -282,7 +278,7 @@ package body P_Carte is
    
    function makeCombi(combi : T_CombElem; val : T_Val; kick : T_Val; valSeq : T_Val) return T_Combinaison is
    begin
-      if combi = Full or combi = DoublePaire then
+      if combi = Full or combi = DoublePaire then				-- Cas d'une combinaison decrite par deux valeurs
          declare
             ret : T_Combinaison(true);
          begin
@@ -293,7 +289,7 @@ package body P_Carte is
             
             return ret;
          end;
-      else
+      else									-- Cas d'une combinaison decrite par une valeur
          declare
             ret : T_Combinaison(false);
          begin
@@ -305,6 +301,7 @@ package body P_Carte is
          end;
       end if;
    end;
+   
    
    function compaCombElem(combi1 : T_CombElem; combi2 : T_CombElem) return T_CompaComplete is
    begin
@@ -332,6 +329,7 @@ package body P_Carte is
    begin
       return comparer(c1,c2) = inf;
    end;   
+   
    
    function toString(val : T_Val) return String is
    begin

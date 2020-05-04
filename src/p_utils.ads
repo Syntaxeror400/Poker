@@ -1,13 +1,19 @@
 package P_Utils is
+   
+   -- Types classique permettant d'uniformiser les types des arguments et retours de methode
+   Type intArray is Array (Positive range <>) of Integer;			-- Table d'entiers
+   Type posArray is Array (Positive range <>) of Positive;			-- Table d'entiers positifs
+   Type boolArray is Array (Positive range <>) of Boolean;			-- Table de booleens
 
-   Type intArray is Array (Positive range <>) of Integer;
-   Type posArray is Array (Positive range <>) of Positive;
-   Type boolArray is Array (Positive range <>) of Boolean;
-   Type T_CompaComplete is (inf, ega, sup);
-   Type compArray is Array (Positive range <>) of T_CompaComplete;
+   -- Types lies a la comparaison
+   Type T_CompaComplete is (inf, ega, sup);					-- Comparaison complete : comparaisons strictes et egalite
+   Type compArray is Array (Positive range <>) of T_CompaComplete;		-- Table de comparaisons
    
-   function getModOf(modulus : Positive; number : Natural) return Natural;
    
+   -- Fonction generique de tri par insertion
+   -- - Entree : une table a trier
+   -- - Sortie : une copie triee de la table
+   -- - Autre : si la fonction de comparaison agit comme '<', la table est triee dans l'ordre decroissant
    generic
       Type T_Element is private;
       Type T_Liste is array (Positive range <>) of T_Element;

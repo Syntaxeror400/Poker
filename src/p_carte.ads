@@ -3,14 +3,14 @@ use P_Utils;
 
 package P_Carte is
    
-   Type T_Carte is private;							-- Le type decrivant une carte
-   Type T_Deck is Array (Positive range <>) of T_Carte;				-- Une table de carte pour pouvoir uniformiser les type dans les methodes
-   Type T_Combinaison is limited private;					-- Le type decrivant la valeur d'une combinaison de cartes
+   Type T_Carte is private;							-- Type decrivant une carte
+   Type T_Deck is Array (Positive range <>) of T_Carte;				-- Table de carte pour pouvoir uniformiser les type dans les methodes
+   Type T_Combinaison is limited private;					-- Type decrivant la valeur d'une combinaison de cartes
    
    -- Fonction permettant de comparer deux cartes
-   -- - Entree : deux cartes
+   -- - Entrees : deux cartes
    -- - Sortie : une comparaison detaillee des cartes (cf T_CompaComplete)
-   -- - Autre : Neglige la couleur
+   -- - Autre : 	Neglige la couleur
    --		Utilise la fonction privee compaVal
    function comparer(carte1:T_Carte; carte2:T_Carte) return T_CompaComplete;
    
@@ -27,13 +27,13 @@ package P_Carte is
    -- Fonction permettant de detecter la meilleur combinaison de cartes dans un deck
    -- - Entree : un deck de cartes
    -- - Sortie : la meilleur combinaison de 5 cartes presente dans ce deck
-   -- - Autre : Pour les decks de moins de 5 cartes, trouve la meilleur combinaison presente dans le deck
+   -- - Autre : 	Pour les decks de moins de 5 cartes, trouve la meilleur combinaison presente dans le deck
    --		Marche aussi avec un deck vide (retourne la combinaison la plus faible)
    --		Pour les decks de plus de 5 cartes, utilise la recursivite et la fonction compaCombi
    function trouverCombinaison(deck : T_Deck) return T_Combinaison;
    
    -- Fonction permettant de comparer deux compinaisons
-   -- - Entree : deux combinaisons
+   -- - Entrees : deux combinaisons
    -- - Sortie : une comparaison detaillee des combinaisons (cf T_CompaComplete)
    -- - Autre : utilise la fonction privee compaCombElem
    function compaCombi(combi1 : T_Combinaison; combi2 : T_Combinaison) return T_CompaComplete;
@@ -86,17 +86,17 @@ private
    
    
    -- Fonction permettant de comparer deux types de combinaisons
-   -- - Entree : deux types de combinaison
+   -- - Entrees : deux types de combinaison
    -- - Sortie : une comparaison detaillee des combinaisons (cf T_CompaComplete)
    function compaCombElem(combi1 : T_CombElem; combi2 : T_CombElem) return T_CompaComplete;
    
    -- Fonction permettan de comparer deux valeurs
-   -- - Entree : deux valeurs
+   -- - Entrees : deux valeurs
    -- - Sortie : une comparaison detaillee des valeurs (cf T_CompaComplete)
    function compaVal(val1 : T_Val; val2 :T_Val) return T_CompaComplete;
    
    -- Fonction de comparaison de cartes avec retour booleen
-   -- - Entree : deux cartes
+   -- - Entrees : deux cartes
    -- - Sortie : vrai si compaVal(c1.valeur, c2.valeur) = inf
    function compSort(c1 : T_Carte; c2 : T_Carte) return boolean;
    
@@ -104,7 +104,7 @@ private
    -- Fonction permettant de trier un deck
    -- - Entree : un deck de cartes
    -- - Sortie : une copie triee du deck
-   -- - Autre : utilise la fonction compSort pour trier
+   -- - Autre : 	utilise la fonction compSort pour trier
    --		instanciation de trierListe du package P_Utils
    function sortDeck is new trierListe(T_Element => T_Carte,
                                        T_Liste => T_Deck,
