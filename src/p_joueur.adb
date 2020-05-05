@@ -36,20 +36,21 @@ Package body P_Joueur is
    end;
    
    -- action : convertit les informations concernant le joueur en string
-function toString(joueur : in T_Joueur) return string is
-   str : Unbounded_String;
-begin
+   function toString(joueur : in T_Joueur) return string is
+      str : Unbounded_String;
+   begin
       str := "Joueur : "& joueur.nom &", argent : " & Integer'image(joueur.argent)
         & " et sa mise est de " & Integer'Image(joueur.mise) 
         & ". Ses cartes sont " & To_Unbounded_String(montrermain(joueur)) & " et il/elle " ;
-   if joueur.En_jeu = True then
-      str := str  & "est en jeu.";
-   else
-      str := str & "n'est pas en jeu";
    end if; 
-   return To_String(str);
-end;
-
+      if joueur.En_jeu = True then
+         str := str  & "est en jeu.";
+      else
+         str := str & "n'est pas en jeu";
+      end if; 
+      return To_String(str);
+   end;
+   
    
    
 end P_Joueur;
