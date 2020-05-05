@@ -23,6 +23,9 @@ package P_Carte is
    -- - Sortie : un deck avec un exemplaire de chaque carte, toujours dans le meme ordre
    function deckComplet return T_Deck;
    
+   -- Fonction permettant de connaitre le nombre de carte max disponibles
+   -- - Sortie : Nombre_Max_Cartes
+   function nombreMaxCartes return Positive;
    
    -- Fonction permettant de detecter la meilleur combinaison de cartes dans un deck
    -- - Entree : un deck de cartes
@@ -77,7 +80,7 @@ private
    end record;
    
    -- Constante : Nombre de cartes differentes existantes
-   Nombre_Max_Cartes : Integer := 13*4;
+   Nombre_Max_Cartes : Positive := 13*4;
    
    -- Fonction permettant de creer une carte a partir des elements
    function makeCarte(coul : T_Coul; val : T_Val) return T_Carte;

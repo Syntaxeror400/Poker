@@ -3,7 +3,7 @@ use P_Utils;
 
 package P_Pot is
    
-   Type T_Pot(nJoueurs : Integer) is limited private;				-- Type decrivant un pot
+   Type T_Pot(nJoueurs : Integer) is private;					-- Type decrivant un pot
    
    
    -- Procedure permettant de remettre a zero un pot

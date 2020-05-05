@@ -32,6 +32,10 @@ package body P_Carte is
       return ret;
    end;
    
+   function nombreMaxCartes return Positive is
+   begin
+      return Nombre_Max_Cartes;
+   end;
    
    function trouverCombinaison(deck : T_Deck) return T_Combinaison is
       deckSize : Natural := deck'Length;

@@ -2,6 +2,7 @@ package P_Utils is
    
    -- Types classique permettant d'uniformiser les types des arguments et retours de methode
    Type intArray is Array (Positive range <>) of Integer;			-- Table d'entiers
+   Type natArray is Array (Positive range <>) of Natural;			-- Table de naturels
    Type posArray is Array (Positive range <>) of Positive;			-- Table d'entiers positifs
    Type boolArray is Array (Positive range <>) of Boolean;			-- Table de booleens
 
