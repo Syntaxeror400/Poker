@@ -1,5 +1,5 @@
-with P_Carte, P_Action, P_Utils;
-use P_Carte, P_Action, P_Utils;
+with P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
+use P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
 
 package P_Joueur is
    
@@ -21,19 +21,19 @@ package P_Joueur is
    -- action : remet tous les compteurs de parties à 0 pour pouvoir commencer à jouer une nouvelle main
    -- E/S/ : joueur - T_Joueur
    -- entraine : 
-   procedure Finmanche(joueur : in out T_Joueur); 
+   procedure finManche(joueur : in out T_Joueur); 
    
    -- action : joue un tour et renvoie l'action choisie
    -- E/ : miseMax - un entier
    -- E/ : CanRelance - un Booléen
    -- E/S/ : joueur - T_Joueur
    -- entraine : en_jeu = True......
-   procedure jouer_tour(miseMax: in Integer; CanRelance: in Boolean; joueur : in out T_Joueur; action : in out T_action); 
+   procedure jouerTour(miseMax: in Integer; CanRelance: in Boolean; joueur : in out T_Joueur; action : in out T_action); 
    
    -- action : montre les cartes de la main d'un joueur
    -- E/ : joueur - T_Joueur 
    -- entraine : put(joueur.main)
-   procedure montrermain(joueur : in T_Joueur);
+   function montrerMain(joueur : in T_Joueur) return String;
                          
    -- action : convertit les informations concernant le joueur en string
    -- E/ : joueur - T_Joueur
@@ -43,9 +43,9 @@ package P_Joueur is
 private
  
    Type T_Joueur is record
-      nom : string(1..30);
+      nom : Unbounded_String;
       argent : integer;
-      MiseActuelle : integer;
+      mise : integer;
       main : T_Deck(1..2);
       en_jeu : Boolean;
    end record;
