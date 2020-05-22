@@ -41,10 +41,10 @@ private
    Type T_Table(nb_joueurs : Positive) is record
       blindes : natArray(1..2);
       nb_relances : Integer range 0..3;
-      index_dealer : Integer;
-      index_joueur_actif : Integer;
+      index_dealer : Integer range 1..nb_joueurs;
+      index_joueur_actif : Integer range 1..nb_joueurs;
       mise_max : Natural;
-      joueurs_mise_max : Integer;
+      joueurs_mise_max : Integerrange -1..nb_joueurs;
       joueurs: tabJoueur(1..nb_joueurs);	
       cartes_ouvertes: T_Deck(1..5);
       nb_cartes_ouvertes: Integer range 0..5;
