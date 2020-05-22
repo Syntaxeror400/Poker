@@ -42,7 +42,6 @@ Package body P_Joueur is
       str := "Joueur : "& joueur.nom &", argent : " & Integer'image(joueur.argent)
         & " et sa mise est de " & Integer'Image(joueur.mise) 
         & ". Ses cartes sont " & To_Unbounded_String(montrermain(joueur)) & " et il/elle " ;
-   end if; 
       if joueur.En_jeu = True then
          str := str  & "est en jeu.";
       else
