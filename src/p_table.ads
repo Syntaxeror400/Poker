@@ -6,9 +6,6 @@ package P_table is
    
    Type T_Table(nb_joueurs : Positive) is private;				-- Le type decrivant une table de poker complete
    
-   -- Table de joueurs
-   Type tabJoueur is array(Positive range <>) of T_Joueur;
-   
    
    -- Fonction permettant de generer une table a partir de joueurs
    -- - Entrees :	joueurs : les joueurs d'index [1,n] seront ajoutes a la table

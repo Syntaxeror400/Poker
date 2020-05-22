@@ -5,6 +5,10 @@ package P_Joueur is
    
    
    type T_Joueur is private;
+      
+   -- Table de joueurs
+   Type tabJoueur is array(Positive range <>) of T_Joueur;
+   
    
    -- action : stock les cartes données par la table
    -- E/ : cartes - T_tab_cartes (un tableau de 2 cartes)  
