@@ -4,8 +4,20 @@ USE P_joueur, P_Aleatoire, P_Carte, P_Utils, P_Pot, ada.text_io, ada.Integer_Tex
 Package body P_table is
    
    function creeTable(joueurs : tabJoueur; n : Positive) return T_Table is
+      table : T_Table;     
    begin
-      null;
+      --blindes
+      table.nb_relances:=0;
+      table.index_dealer:=1;
+      table.index_joueur_actif:=1;
+      table.mise_max:=0;
+      table.joueurs_mise_max:=-1;
+      table.joueurs:=joueurs;
+      --cartes ouvertes
+      table.nb_cartes_ouvertes:=0;
+      --pots
+      --deck
+      return table;
    end;
    
    procedure Lancer_Partie (table_joueur : T_Table) is
