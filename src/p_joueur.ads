@@ -1,5 +1,5 @@
-with P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
-use P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
+with P_Carte, P_Utils, Ada.Strings.Unbounded;
+use P_Carte, P_Utils, Ada.Strings.Unbounded;
 
 package P_Joueur is
    
@@ -8,6 +8,7 @@ package P_Joueur is
       
    -- Table de joueurs
    Type tabJoueur is array(Positive range <>) of T_Joueur;
+   Type T_Action is (Coucher, Checker, Miser, Suivre, Surmiser);		-- Types decrivant les actions qu'un joueur peut effectuer a chaque tour
    
    
    -- action : stock les cartes données par la table

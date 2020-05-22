@@ -1,5 +1,5 @@
-with P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
-use P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
+with P_Carte, P_Utils, Ada.Strings.Unbounded;
+use P_Carte, P_Utils, Ada.Strings.Unbounded;
 
 Package body P_Joueur is 
    
