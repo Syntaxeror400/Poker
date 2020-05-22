@@ -8,7 +8,9 @@ package P_Joueur is
       
    -- Table de joueurs
    Type tabJoueur is array(Positive range <>) of T_Joueur;
-   Type T_Action is (Coucher, Checker, Miser, Suivre, Surmiser);		-- Types decrivant les actions qu'un joueur peut effectuer a chaque tour
+   
+   --Types decrivant les actions qu'un joueur peut effectuer a chaque tour
+   Type T_Action is (Coucher, Checker, Miser, Suivre, Surmiser); 
    
    
    -- action : stock les cartes données par la table
