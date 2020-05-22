@@ -1,5 +1,5 @@
-WITH P_joueur, P_action, P_Aleatoire, P_Carte, P_Utils, P_Pot, ada.text_io, ada.Integer_Text_IO;
-USE P_joueur, P_action, P_Aleatoire, P_Carte, P_Utils, P_Pot, ada.text_io, ada.Integer_Text_IO;
+WITH P_joueur, P_Aleatoire, P_Carte, P_Utils, P_Pot, ada.text_io, ada.Integer_Text_IO;
+USE P_joueur, P_Aleatoire, P_Carte, P_Utils, P_Pot, ada.text_io, ada.Integer_Text_IO;
 
 Package body P_table is
    

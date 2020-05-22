@@ -1,5 +1,5 @@
-with P_Joueur, P_Action, P_Aleatoire, P_Carte, P_Utils, P_Pot,Ada.Containers.Indefinite_Vectors;
-use P_Joueur, P_Action, P_Carte, P_Utils, P_Pot;
+with P_Joueur, P_Aleatoire, P_Carte, P_Utils, P_Pot,Ada.Containers.Indefinite_Vectors;
+use P_Joueur, P_Carte, P_Utils, P_Pot;
 
 package P_table is
       
