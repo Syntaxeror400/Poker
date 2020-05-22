@@ -46,7 +46,7 @@ begin
          Put_Line("-----");
          New_Line;
          Put_Line("-----");
-         Put_Line("Debut du test de 100 meanges/tirages/combinaisons");
+         Put_Line("Debut du test de 100 meanges/tirages (7 cartes)/combinaisons");
          Put_Line("-----");
          New_Line;
          Put_Line("-----");
