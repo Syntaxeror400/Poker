@@ -1,8 +1,11 @@
-with P_Joueur, P_Aleatoire, P_Carte, P_Utils, P_Pot,Ada.Containers.Indefinite_Vectors;
-use P_Joueur, P_Carte, P_Utils, P_Pot;
+with P_Joueur, P_Action, P_Aleatoire, P_Carte, P_Utils, P_Pot, Ada.Containers.Indefinite_Vectors;
+use P_Joueur, P_Action, P_Carte, P_Utils, P_Pot;
 
 package P_table is
       
+   
+   No_More_Cards_Exception : Exception;						-- Exception levee quand on veut piocher alors qu'il n'y en a plus
+   Invalid_State_Exception : Exception;						-- Exception levee si la table est dans un etat impossible
    
    Type T_Table(nb_joueurs : Positive) is private;				-- Le type decrivant une table de poker complete
    
@@ -29,13 +32,17 @@ private
    package P_Vectors is new Ada.Containers.Indefinite_Vectors(Positive, T_Pot);
    use P_Vectors;
    
+   -- Implementation du melange aleatoir
+   package P_Alea_Cartes is new P_Aleatoire(T_Element => T_Carte,T_Liste   => T_Deck);
+   use P_Alea_Cartes;
+   
    -- Vecteur de pots
    Type vecPot is new Vector with null record;
    
    -- Type qui combine un deck et l'index de la carte pour piocher la suivante
    Type T_FullDeck is record
       deck : T_Deck(1..P_Carte.nombreMaxCartes);
-      carteSuivante : Integer range 1..P_Carte.nombreMaxCartes;
+      carteSuivante : Integer range 1..(P_Carte.nombreMaxCartes+1);
    end record;
    
    Type T_Table(nb_joueurs : Positive) is record
@@ -44,7 +51,7 @@ private
       index_dealer : Integer range 1..nb_joueurs;
       index_joueur_actif : Integer range 1..nb_joueurs;
       mise_max : Natural;
-      joueurs_mise_max : Integerrange -1..nb_joueurs;
+      joueurs_mise_max : Integerrange 0..nb_joueurs;
       joueurs: tabJoueur(1..nb_joueurs);	
       cartes_ouvertes: T_Deck(1..5);
       nb_cartes_ouvertes: Integer range 0..5;
@@ -60,7 +67,11 @@ private
    -- - Entree : la table concernee
    procedure Poser_cartes_ouvertes(table : T_Table);
    
-   -- Procedure permettant de mettre fin a une manche (on redistribue les cartes apres)
+   -- Procedure permettant de commencer une manche
+   -- - Entree : la table concernee
+   procedure Debut_manche(table : T_Table);
+   
+   -- Procedure permettant de mettre fin a une manche (notifier les joueurs)
    -- - Entree : la table concernee
    procedure Fin_manche(table : T_Table);
    
@@ -78,6 +89,13 @@ private
    -- - Entree : la table concernee
    -- - Sortie : la prochaine carte du deck de la table
    function piocherCarte(table : T_Table) return T_Carte;
+   
+   
+   -- Procedure changeant le joueur actif
+   -- - Entree : la table en question
+   -- - Autre : augment index_joueur_actif de 1 et le fait boucler correctement
+   procedure joueurSuivant(table : T_Table);
+   
    
    
 end P_table;      

@@ -1,16 +1,13 @@
-with P_Carte, P_Utils, Ada.Strings.Unbounded;
-use P_Carte, P_Utils, Ada.Strings.Unbounded;
+with P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
+use P_Carte, P_Action, P_Utils, Ada.Strings.Unbounded;
 
 package P_Joueur is
    
    
-   type T_Joueur is private;
-      
-   -- Table de joueurs
-   Type tabJoueur is array(Positive range <>) of T_Joueur;
+   Has_To_All_In_Exception : Exception;						-- Exception lancee quand le joueur doit faire tapis pour miser
    
-   --Types decrivant les actions qu'un joueur peut effectuer a chaque tour
-   Type T_Action is (Coucher, Checker, Miser, Suivre, Surmiser); 
+   type T_Joueur is private;
+   Type tabJoueur is array(Positive range <>) of T_Joueur;
    
    
    -- action : stock les cartes données par la table
@@ -23,7 +20,12 @@ package P_Joueur is
    -- E/ : mise - un entier 
    -- E/S/ : joueur - T_Joueur
    -- entraine : joueur.argent = joueur.argent + mise
-   procedure gagnerMise(mise : in integer; joueur : in out T_Joueur); 
+   procedure gagnerMise(mise : in integer; joueur : in out T_Joueur);
+   
+   -- Procedure qui fait miser sa blinde a un joueur
+   -- - Entree : le joueur et la mise a poser
+   -- - Autre : ne fait rien si la mise du joueur n'est pas nulle
+   procedure poserBlinde(joueur : T_Joueur; blinde : natural);
    
    -- action : remet tous les compteurs de parties à 0 pour pouvoir commencer à jouer une nouvelle main
    -- E/S/ : joueur - T_Joueur
@@ -41,11 +43,17 @@ package P_Joueur is
    -- E/ : joueur - T_Joueur 
    -- entraine : put(joueur.main)
    function montrerMain(joueur : in T_Joueur) return String;
-                         
+   
+   -- Fonction qui permet de connaitre l'argent que possede un joueur
+   -- - Entree : un joueur
+   -- - Sortie : l'argent de ce joueur
+   function getArgent(joueur : in T_Joueur) return Integer;
+   
    -- action : convertit les informations concernant le joueur en string
    -- E/ : joueur - T_Joueur
    -- entraine : put(joueur)
    function toString(joueur : in T_Joueur) return string;
+   
    
 private
  
@@ -57,6 +65,11 @@ private
       en_jeu : Boolean;
    end record;
    
+   
+   -- Prodecure qui transfert de l'argent dans la mise
+   -- - Entree : un joueur, un montant
+   -- - Autre : Si le joueur n'a pas les fonds necessaires, envoie une exception (demande de tapis)
+   procedure miser(joueur : T_Joueur; montant : Natural);
    
 
 end P_Joueur;

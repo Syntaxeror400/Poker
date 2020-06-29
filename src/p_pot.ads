@@ -6,11 +6,10 @@ package P_Pot is
    Type T_Pot(nJoueurs : Integer) is private;					-- Type decrivant un pot
    
    
-   -- Procedure permettant de remettre a zero un pot
-   -- - Entrees : 	pot : le pot concerne
-   --		joueurs : les joueurs ayant acces a ce pot
+   -- Fonction permettant de creer un pot
+   -- - Entrees : joueurs : les joueurs ayant acces a ce pot
    -- - Effets : Remet a zero l'argent du pot et affecte la nouvelle table de joueurs
-   procedure reset(pot : in out T_Pot; joueurs : in posArray);
+   function creerPot(joueurs : in posArray) return T_Pot;
    
    -- Procedure permettant d'ajouter de l'argent a un pot
    -- - Entrees :	pot : le pot concerne
