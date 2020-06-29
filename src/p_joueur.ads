@@ -9,6 +9,10 @@ package P_Joueur is
    type T_Joueur is private;
    Type tabJoueur is array(Positive range <>) of T_Joueur;
    
+   -- Procedure permettant de creer un joueur en lui affectant un nom
+   -- - Entree : le nom du joueur
+   -- - Sortie : le joueur
+   function creerJoueur(nom : in String; argent : in Natural) return T_Joueur;
    
    -- action : stock les cartes données par la table
    -- E/ : cartes - T_tab_cartes (un tableau de 2 cartes)  
@@ -25,7 +29,7 @@ package P_Joueur is
    -- Procedure qui fait miser sa blinde a un joueur
    -- - Entree : le joueur et la mise a poser
    -- - Autre : ne fait rien si la mise du joueur n'est pas nulle
-   procedure poserBlinde(joueur : T_Joueur; blinde : natural);
+   procedure poserBlinde(joueur :  in out T_Joueur; blinde : in natural);
    
    -- action : remet tous les compteurs de parties à 0 pour pouvoir commencer à jouer une nouvelle main
    -- E/S/ : joueur - T_Joueur
@@ -49,6 +53,11 @@ package P_Joueur is
    -- - Sortie : l'argent de ce joueur
    function getArgent(joueur : in T_Joueur) return Integer;
    
+   -- Fonction qui permet de recuperer le nom d'un joueur
+   -- - Entree : un joueur
+   -- - Sortie : son nom
+   function getName(joueur : in T_Joueur) return String;
+   
    -- action : convertit les informations concernant le joueur en string
    -- E/ : joueur - T_Joueur
    -- entraine : put(joueur)
@@ -69,7 +78,7 @@ private
    -- Prodecure qui transfert de l'argent dans la mise
    -- - Entree : un joueur, un montant
    -- - Autre : Si le joueur n'a pas les fonds necessaires, envoie une exception (demande de tapis)
-   procedure miser(joueur : T_Joueur; montant : Natural);
+   procedure miser(joueur : in out T_Joueur; montant : in Natural);
    
 
 end P_Joueur;

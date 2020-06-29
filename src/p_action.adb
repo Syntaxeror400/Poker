@@ -15,5 +15,10 @@ package body P_Action is
          return 0;
       end if;
    end;
+   
+   function getElem(act : T_Action) return T_ActionElem is
+   begin
+      return act.elem;
+   end;
 
 end P_Action;

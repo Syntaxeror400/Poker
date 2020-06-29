@@ -10,19 +10,25 @@ package P_table is
    Type T_Table(nb_joueurs : Positive) is private;				-- Le type decrivant une table de poker complete
    
    
+   -- Procedure permettant de lancer la partie
+   -- - Entree : la table concernee, contenant les joueurs
+   -- - Autre : Lance la boucle principale de jeu, qui ne se quitte que quand il ne reste plus qu'un seul joueur avec de l'argent
+   procedure Lancer_Partie;
+   
    -- Fonction permettant de generer une table a partir de joueurs
    -- - Entrees :	joueurs : les joueurs d'index [1,n] seront ajoutes a la table
    --		n : le nombre de joueurs
    -- - Sortie : une table contenant les joueurs
-   function creeTable(joueurs : tabJoueur; n : Positive) return T_Table;
+   function creeTable(joueurs : in out tabJoueur; n : in Positive) return T_Table;
    
-   -- Procedure permettant de lancer la partie
-   -- - Entree : la table concernee, contenant les joueurs
-   -- - Autre : Lance la boucle principale de jeu, qui ne se quitte que quand il ne reste plus qu'un seul joueur avec de l'argent
-   procedure Lancer_Partie(table : T_Table);
+   -- Procedure permettant de monter les blindes
+   -- - Entrees :	table : la table concernee
+   --		nMin : la nouvelle petite blinde
+   --		nMax : la nouvelle grosse blinde
+   procedure Monter_blindes(table : in out T_Table; nMin : in Natural; nMax : in Natural);
    
    -- Fonction permettant de recuperer une representation textuelle de la table
-   function toString(table : T_Table) return String;
+   function toString(table : in T_Table) return String;
    
    
    
@@ -48,10 +54,10 @@ private
    Type T_Table(nb_joueurs : Positive) is record
       blindes : natArray(1..2);
       nb_relances : Integer range 0..3;
-      index_dealer : Integer range 1..nb_joueurs;
-      index_joueur_actif : Integer range 1..nb_joueurs;
+      index_dealer : Integer;
+      index_joueur_actif : Integer;
       mise_max : Natural;
-      joueurs_mise_max : Integerrange 0..nb_joueurs;
+      joueurs_mise_max : Integer;
       joueurs: tabJoueur(1..nb_joueurs);	
       cartes_ouvertes: T_Deck(1..5);
       nb_cartes_ouvertes: Integer range 0..5;
@@ -61,40 +67,34 @@ private
    
    -- Procedure permettant de distribuer les cartes aux joueurs
    -- - Entree : la table concernee
-   procedure Distribuer_main(table : T_Table);
+   procedure Distribuer_main(table : in out T_Table);
    
    -- Procedure permettant de poser les cartes ouvertes
    -- - Entree : la table concernee
-   procedure Poser_cartes_ouvertes(table : T_Table);
+   procedure Poser_cartes_ouvertes(table : in out T_Table);
    
    -- Procedure permettant de commencer une manche
    -- - Entree : la table concernee
-   procedure Debut_manche(table : T_Table);
+   procedure Debut_manche(table : in out T_Table; nAlive : in Natural);
    
    -- Procedure permettant de mettre fin a une manche (notifier les joueurs)
    -- - Entree : la table concernee
-   procedure Fin_manche(table : T_Table);
+   procedure Fin_manche(table : in out T_Table);
    
    -- Procedure permettant de melanger le deck
    -- - Entree : la table concernee
-   procedure Melange_deck(table : T_Table);
-   
-   -- Procedure permettant de monter les blindes
-   -- - Entrees :	table : la table concernee
-   --		nMin : la nouvelle petite blinde
-   --		nMax : la nouvelle grosse blinde
-   procedure Monter_blindes(table : T_Table; nMin : Natural; nMax : Natural);
-   
+   procedure Melange_deck(table : in out T_Table);
+      
    -- Fonction permettant de piocher une carte du deck
    -- - Entree : la table concernee
    -- - Sortie : la prochaine carte du deck de la table
-   function piocherCarte(table : T_Table) return T_Carte;
+   function piocherCarte(table : in out T_Table) return T_Carte;
    
    
    -- Procedure changeant le joueur actif
    -- - Entree : la table en question
    -- - Autre : augment index_joueur_actif de 1 et le fait boucler correctement
-   procedure joueurSuivant(table : T_Table);
+   procedure joueurSuivant(table : in out T_Table);
    
    
    

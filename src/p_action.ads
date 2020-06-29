@@ -1,7 +1,7 @@
 package P_Action is
    
-   Type T_Action is private;
    Type T_ActionElem is (Coucher, Miser, Suivre);
+   Type T_Action(elem : T_ActionElem) is private;
    
    
    -- Fonction permettant de creer une action miser

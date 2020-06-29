@@ -20,7 +20,7 @@ package P_Pot is
    -- Fonction permettant de recuperer l'argent contenu dans le pot
    -- Entree : le pot concerne
    -- Sortie : l'argent contenu dans le pot
-   function getArgent(pot : T_Pot) return Natural;
+   function getPotArgent(pot : T_Pot) return Natural;
    
    -- Fonction permettant de recuperer les joueurs ayant acces au pot
    -- Entree : le pot concerne

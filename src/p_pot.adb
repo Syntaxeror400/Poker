@@ -22,7 +22,7 @@ package body P_Pot is
       pot.argent := pot.argent + montant;
    end;
    
-   function getArgent(pot : T_Pot) return Natural is
+   function getPotArgent(pot : T_Pot) return Natural is
    begin
       return pot.argent;
    end;
