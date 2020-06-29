@@ -32,6 +32,16 @@ package body P_Pot is
       return pot.joueurs;
    end;
    
+   function isJoueurIn(pot :in T_Pot; joueur : in Positive) return booleanis
+   begin
+      for i in 1..nJoueurs loop
+         if pot.joueurs(i) = joueur then
+              return true;
+         end if;
+      end loop;
+      return false;
+   end;
+   
    
    function toString(pot : T_Pot) return String is
       ret : Unbounded_String;

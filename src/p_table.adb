@@ -1,5 +1,5 @@
-WITH P_joueur, P_Action, P_Carte, P_Utils, P_Pot, gui;
-USE P_joueur, P_Action, P_Carte, P_Utils, P_Pot;
+WITH P_joueur, P_Action, P_Carte, P_Utils, P_Pot, Ada.Strings.Unbounded, gui;
+USE P_joueur, P_Action, P_Carte, P_Utils, P_Pot, Ada.Strings.Unbounded;
 
 Package body P_table is
    
@@ -7,7 +7,7 @@ Package body P_table is
    
    procedure Lancer_Partie is
       nAlive : Natural;
-      playing : boolean := true;
+      playing, done : boolean := true;
       nb_joueurs : Natural := gui.getNJoueurs;
    begin
       declare
@@ -21,7 +21,24 @@ Package body P_table is
             
             while playing loop
                for i in 1..table.nb_joueurs loop
-                  null;-- TODO
+                  if isPlaying(table.joueurs(i)) then
+                     done := false;
+                     while not done loop
+                        declare
+                           act : T_Action := gui.playTurn(table, table.joueurs(i), i);
+                        begin
+                           if getElem(act) = Miser and table.nb_relances < 3 then
+                              if getMise(act) > table.mise_max*2 then
+                                 
+                              else
+                                 gui.mustMiseMore;
+                              end if;
+                           else
+                              gui.cannotMise;
+                           end if;
+                        end;
+                     end loop;
+                  end if;
                end loop;
             end loop;
             
@@ -65,9 +82,38 @@ Package body P_table is
       table.blindes(1):=nMin;
    end;
    
-   function toString (table : in T_Table) return String is--TODO
+   function getMiseMax(table : in T_Table) return Natural is
    begin
-      return "";
+      return table.mise_max;
+   end;
+   
+   
+   function toString (table : in T_Table) return String is
+      ret : Unbounded_String;
+   begin
+      if table.nb_cartes_ouvertes > 0 then
+         ret := To_Unbounded_String("Cartes ouvertes : [\");
+         for i in 1..table.nb_cartes_ouvertes loop
+            ret := ret& toString(table.cartes_ouvertes(i))& "\";
+         end loop;
+         ret := ret& "]";
+      else
+         ret := ret& "Il n'y a pas encore de carte ouverte";
+      end if;
+      ret := ret& "\\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
+      ret := ret& "La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
+      return To_String(ret);
+   end;
+   
+   function getPots(table : in T_Table; joueur :in Positive) return String is
+      ret : Unbounded_String;
+      pots : posArray := findPots(table, joueur);
+   begin
+      ret := To_Unbounded_String("Les pots qui sont ouverts au joueur sont : ");
+      for i in pots'Range loop
+         ret := ret& " - "& Integer'Image(getPotArgent(table.pots(pots(i))))& "\";
+      end loop;
+      return To_String(ret);
    end;
    
    -- PRIVATE
@@ -168,6 +214,53 @@ Package body P_table is
       else
          table.index_joueur_actif := 1;
       end if;
+   end;
+   
+   function findPots(table : in T_Table; joueur : in Positive) return posArray is
+      retSize : Natural :=0;
+   begin
+      for i in 1..Length(table.pots) loop
+         if isJoueurIn(Element(table.pots, i), joueur) then
+            retSize := retSize +1;
+         end if;
+      end loop;
+      if retSize > 0 then
+         declare
+            ret : posArray(1..retSize);
+            k : Positive :=1;
+         begin
+            for i in 1..Length(table.pots) loop
+               if isJoueurIn(Element(table.pots, i), joueur) then
+                  ret(k) := i;
+                  k := k+1;
+               end if;
+            end loop;
+            return ret;
+         end;
+      else
+         declare
+            ret : posArray(1..1);
+         begin
+            ret(1) := table.nb_joueurs+1;
+            return ret;
+         end;
+      end if;
+   end;
+   
+   function lastOneStanding(table : in T_Table) return boolean is
+      one : boolean := false;
+   begin
+      for i in 1..table.nb_joueurs loop
+         if isPlaying(table.joueurs(i)) then
+            if one then
+               return false;
+            else
+               one := true;
+            end if;
+         end if;
+      end loop;
+
+      return one;
    end;
    
    

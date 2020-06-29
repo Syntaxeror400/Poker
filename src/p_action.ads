@@ -1,6 +1,6 @@
 package P_Action is
    
-   Type T_ActionElem is (Coucher, Miser, Suivre);
+   Type T_ActionElem is (Coucher, Miser, Suivre, Tapis);
    Type T_Action(elem : T_ActionElem) is private;
    
    
@@ -29,6 +29,8 @@ private
          when Miser =>
             mise_totale : Positive;
          when Suivre =>
+            null;
+         when Tapis =>
             null;
       end case;
    end record;

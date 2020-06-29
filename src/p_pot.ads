@@ -20,12 +20,17 @@ package P_Pot is
    -- Fonction permettant de recuperer l'argent contenu dans le pot
    -- Entree : le pot concerne
    -- Sortie : l'argent contenu dans le pot
-   function getPotArgent(pot : T_Pot) return Natural;
+   function getPotArgent(pot :in T_Pot) return Natural;
    
    -- Fonction permettant de recuperer les joueurs ayant acces au pot
    -- Entree : le pot concerne
    -- Sortie : la table contenant les indexs des joueurs ayant acces au pot
-   function getJoueurs(pot : T_Pot) return posArray;
+   function getJoueurs(pot :in T_Pot) return posArray;
+   
+   -- Fonction permettant de savoir si un joueur est dans un pot
+   -- - Entree : le joueur en question
+   -- - Sortie : si le joueur est dans le pot
+   function isJoueurIn(pot :in T_Pot; joueur : in Positive) return boolean;
    
    
    -- Fonction permettant d'obtenir une representation textuelle du pot

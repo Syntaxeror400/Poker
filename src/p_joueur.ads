@@ -36,12 +36,10 @@ package P_Joueur is
    -- entraine : 
    procedure finManche(joueur : in out T_Joueur); 
    
-   -- action : joue un tour et renvoie l'action choisie
-   -- E/ : miseMax - un entier
-   -- E/ : CanRelance - un Booléen
-   -- E/S/ : joueur - T_Joueur
-   -- entraine : en_jeu = True......
-   procedure jouerTour(miseMax: in Integer; CanRelance: in Boolean; joueur : in out T_Joueur; action : in out T_action); 
+   -- Fonction permettant de faire jouer l'action choisie par le joueur
+   -- - Entree : le joueur, l'action a effectuer
+   -- - Sortie : un booleen attestant du succes
+   function jouerTour(miseActuelle : in Natural; joueur : in out T_Joueur; action : in T_Action) return boolean;
    
    -- action : montre les cartes de la main d'un joueur
    -- E/ : joueur - T_Joueur 
@@ -57,6 +55,11 @@ package P_Joueur is
    -- - Entree : un joueur
    -- - Sortie : son nom
    function getName(joueur : in T_Joueur) return String;
+   
+   -- Fonction qui permet de savoir si le joueur est en jeu
+   -- - Entree : le joueur
+   -- - Sortie : si le joueur est en jeu
+   function isPlaying(joueur : in T_Joueur) return boolean;
    
    -- action : convertit les informations concernant le joueur en string
    -- E/ : joueur - T_Joueur

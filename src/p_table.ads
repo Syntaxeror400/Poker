@@ -27,9 +27,16 @@ package P_table is
    --		nMax : la nouvelle grosse blinde
    procedure Monter_blindes(table : in out T_Table; nMin : in Natural; nMax : in Natural);
    
+   -- Fonction qui permet de recuperer la mise maximale actuelle
+   -- - Entree : la table en question
+   -- - Sortie : la mise maximale
+   function getMiseMax(table : in T_Table) return Natural;
+   
    -- Fonction permettant de recuperer une representation textuelle de la table
+   -- - Autre : Donne l'etat actuel du jeu et est utilisee dans l'affichage graphique
    function toString(table : in T_Table) return String;
    
+   function getPots(table : in T_Table; joueur :in Positive) return String;
    
    
 private
@@ -43,7 +50,7 @@ private
    use P_Alea_Cartes;
    
    -- Vecteur de pots
-   Type vecPot is new Vector with null record;
+--   Type vecPot is new Vector with null record;
    
    -- Type qui combine un deck et l'index de la carte pour piocher la suivante
    Type T_FullDeck is record
@@ -61,7 +68,7 @@ private
       joueurs: tabJoueur(1..nb_joueurs);	
       cartes_ouvertes: T_Deck(1..5);
       nb_cartes_ouvertes: Integer range 0..5;
-      pots : vecPot;
+      pots : Vector;
       deck : T_FullDeck;
    end record;
    
@@ -90,12 +97,20 @@ private
    -- - Sortie : la prochaine carte du deck de la table
    function piocherCarte(table : in out T_Table) return T_Carte;
    
-   
    -- Procedure changeant le joueur actif
    -- - Entree : la table en question
    -- - Autre : augment index_joueur_actif de 1 et le fait boucler correctement
    procedure joueurSuivant(table : in out T_Table);
    
+   -- Fonction permettant de trouver les pots auquel un joueur peut pretendre
+   -- - Entree : l'index du joueur et la table
+   -- - Sortie : les indexs des pots ou il peut pretendre
+   function findPots(table : in T_Table; joueur : in Positive) return posArray;
+   
+   -- Fonction permettant de savoir si seulement un joueur est encore en jeu
+   -- - Entree : un table
+   -- - Sortie : si il ne reste que un joueur en jeu
+   function lastOneStanding(table : in T_Table) return boolean;
    
    
 end P_table;      

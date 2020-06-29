@@ -42,9 +42,22 @@ Package body P_Joueur is
       null;
    end;
    
-   procedure jouerTour(miseMax: in Integer; CanRelance: in Boolean; joueur : in out T_Joueur; action : in out T_action) is
+   function jouerTour(miseActuelle : in Natural; joueur : in out T_Joueur; action : in T_Action) return boolean is
    begin
-      null;
+      case getElem(action) is
+         when Coucher =>
+            joueur.en_jeu := False;
+            return True;
+         when Suivre =>
+            miser(joueur, miseActuelle-joueur.mise);
+            return true;
+         when Miser =>
+            miser(joueur, getMise(action)-joueur.mise);
+            return true;
+         when Tapis =>
+            miser(joueur, joueur.argent);
+            return true;
+      end case;
    end;
             
    function getArgent(joueur :  in T_Joueur) return Integer is
@@ -55,6 +68,11 @@ Package body P_Joueur is
    function getName(joueur : in T_Joueur) return String is
    begin
       return To_String(joueur.nom);
+   end;
+   
+   function isPlaying(joueur : in T_Joueur) return boolean is
+   begin
+      return joueur.en_jeu;
    end;
    
    function toString(joueur : in T_Joueur) return string is

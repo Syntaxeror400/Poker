@@ -1,5 +1,5 @@
-with ada.Text_IO, ada.Integer_Text_IO, P_table, P_Joueur, Ada.characters.handling, P_Utils;
-use ada.Text_IO, ada.Integer_Text_IO, P_table, P_Joueur, Ada.characters.handling, P_Utils;
+with ada.Text_IO, ada.Integer_Text_IO, P_table, P_Joueur, Ada.characters.handling, P_Utils, Ada.Strings.Unbounded;
+use ada.Text_IO, ada.Integer_Text_IO, P_table, P_Joueur, Ada.characters.handling, P_Utils, Ada.Strings.Unbounded;
 
 package body GUI is
 
@@ -7,8 +7,8 @@ package body GUI is
    begin
       put_line("Lancement du programme de Poker");
       New_Line;
-      put_line("Codé par 'Les As du Poker' : ");
-      put_Line("Rémi LEMAIRE");
+      put_line("Code par 'Les As du Poker' : ");
+      put_Line("Remi LEMAIRE");
       put_Line("Antonin GARREAU");
       put_Line("Hugo GIRODON");
       put_Line("Martin GRAUER");
@@ -121,6 +121,100 @@ package body GUI is
       Put_Line("----------");
       return table;
    end;
+   
+   function playTurn(table : T_Table; joueur : T_Joueur; jPos: Positive) return T_Action is
+      done, ok : boolean;
+      mise : Natural;
+      str : Unbounded_String;
+   begin
+      Put_line(getName(joueur)& " : C'est a votre tour.");
+      decodeString(toString(table));
+      decodeString(getPots(table, jPos));
+      
+      done := false;								-- Ne passe jamais a vrai
+      while not done loop
+         Put_Line("Que voulez-vous faire ? Vous pouvez :");
+         put_line("- Voire vos cartes : 'main'");
+         put_line("- Vous coucher : 'coucher'");
+         Put_Line("- Suivre la mise actuelle (checker si elle est de 0) : 'suivre'");
+         Put_Line("- Miser ou surmiser : 'miser'");
+         Put_Line("- Tapis : 'tapis'");
+         New_Line;
+         
+         ok := false;
+         while not ok loop
+            str := To_Unbounded_String(Get_Line);
+            if str = "main" then
+               Put("Votre main est : ");
+               Put_Line(montrerMain(joueur));
+            elsif str = "coucher" then
+               Put_Line("Etes vous sur de vouloir vous coucher ?(y/n)");
+               if To_Lower(Get_Line(1)) = 'y'then
+                  declare
+                     ret : t_Action(Coucher);
+                  begin
+                     return ret;
+                  end;
+               end if;
+            elsif str = "suivre" then
+               Put_Line("Etes vous sur de vouloir vous suivre ?(y/n)");
+               if To_Lower(Get_Line(1)) = 'y'then
+                  declare
+                     ret : T_Action(Suivre);
+                  begin
+                     return ret;
+                  end;
+               end if;
+            elsif str = "miser" then
+               Put_Line("Combien voulez-vous miser/surmiser ? (Indiquer la mise totale finale, 0 pour annuler)");
+               get(mise);
+               Skip_Line;
+               
+               while (not(mise = 0)) or mise < getMiseMax(table) loop
+                  Put_Line("La mise doit depasser "& Integer'Image(getMiseMax(table))& "(0 pour annuler)");
+                  get(mise);
+                  Skip_Line;
+               end loop;
+               if mise >0 then
+                  return creerMise(mise);
+               end if;
+            elsif str = "tapis" then
+               Put_Line("Etes vous sur de vouloir faire tapis ?(y/n)");
+               if To_Lower(Get_Line(1)) = 'y'then
+                  declare
+                     ret : t_Action(Tapis);
+                  begin
+                     return ret;
+                  end;
+               end if;
+            else
+               Put_Line("Veuillez rentrer une commande valide.");
+            end if;
+         end loop;
+      end loop;
+   end;
+   
+   procedure cannotMise is
+   begin
+      Put_Line("Vous ne pouvez plus surmiser.");
+   end;
+   
+   procedure mustMiseMore is
+   begin
+      Put_Line("Vous devez miser plus du double de la mise actuelle");
+   end;
+   
+   
+   procedure decodeString(str : String) is					-- Importe du projet PICROSS
+      temp : Integer :=1;
+   begin
+      for i in 1..str'Length loop
+         if str(i) = '\' then
+            put_line(str(temp..i-1));
+            temp := i+1;
+         end if;
+      end loop;
+   end decodeString;
    
    
    
