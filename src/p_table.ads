@@ -98,9 +98,11 @@ private
    function piocherCarte(table : in out T_Table) return T_Carte;
    
    -- Procedure changeant le joueur actif
-   -- - Entree : la table en question
+   -- - Entree :	- table : la table en question
+   --		- alive : si le joueur doit avoir de l'argent
+   --		- inGame : si le joueur doit etre en jeu
    -- - Autre : augment index_joueur_actif de 1 et le fait boucler correctement
-   procedure joueurSuivant(table : in out T_Table);
+   procedure joueurSuivant(table : in out T_Table; alive :in boolean; inGame : in boolean);
    
    -- Fonction permettant de trouver les pots auquel un joueur peut pretendre
    -- - Entree : l'index du joueur et la table
@@ -108,9 +110,20 @@ private
    function findPots(table : in T_Table; joueur : in Positive) return posArray;
    
    -- Fonction permettant de savoir si seulement un joueur est encore en jeu
-   -- - Entree : un table
+   -- - Entree :	- table : la table en question
+   --		- alive : si le joueur doit avoir de l'argent
+   --		- inGame : si le joueur doit etre en jeu
    -- - Sortie : si il ne reste que un joueur en jeu
-   function lastOneStanding(table : in T_Table) return boolean;
+   function lastOneStanding(table : in T_Table; alive :in boolean; inGame : in boolean) return boolean;
    
+   -- Procedure permettant de reorganiser les pots apres des tapis
+   -- - Entree : la table
+   -- - Autre : cree differents pots suivant les joueurs qui ont fait tapis
+   procedure updatePots(table : in out T_Table);
+   
+   -- Procedure permettant d'ajouter de l'argent a un des pots de la table
+   -- - Entree : la table et le montant a ajouter
+   -- - Autre : clone le pot et ajoute l'argent avant de le remettre dans un vecteur
+   procedure addArgentToLastPot(table : in out T_Table; montant : in Positive);
    
 end P_table;      

@@ -17,6 +17,15 @@ package body P_Pot is
       return ret;
    end;
    
+   function clonerPot(pot : in T_Pot) return T_Pot is
+      ret : T_Pot(pot.nJoueurs);
+   begin
+      ret.joueurs := pot.joueurs;
+      ret.argent := pot.argent;
+      
+      return ret;
+   end;
+   
    procedure addArgent(pot : in out T_Pot; montant : in Positive) is
    begin
       pot.argent := pot.argent + montant;
@@ -30,6 +39,11 @@ package body P_Pot is
    function getJoueurs(pot : T_Pot) return posArray is
    begin
       return pot.joueurs;
+   end;
+   
+   function getnJoueurs(pot :in T_Pot) return Positive is
+   begin
+      return pot.nJoueurs;
    end;
    
    function isJoueurIn(pot :in T_Pot; joueur : in Positive) return booleanis

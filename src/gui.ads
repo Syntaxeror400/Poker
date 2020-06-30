@@ -25,6 +25,9 @@ package GUI is
    -- Message pour indiquer une surmise insuffisante
    procedure mustMiseMore;
    
+   -- Message pour indiquer qu'il faut all in
+   procedure hasToAllIn;
+   
    -- Procedure permettant d'afficher plusieurs lignes en partant d'une chaine de caracteres
    -- - Entree : la chaine de caractere
    -- - Autre : execute le retour de ligne sur le caractere '\'

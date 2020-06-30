@@ -30,10 +30,10 @@ package P_Joueur is
    -- - Entree : le joueur et la mise a poser
    -- - Autre : ne fait rien si la mise du joueur n'est pas nulle
    procedure poserBlinde(joueur :  in out T_Joueur; blinde : in natural);
-   
+      
    -- action : remet tous les compteurs de parties à 0 pour pouvoir commencer à jouer une nouvelle main
    -- E/S/ : joueur - T_Joueur
-   -- entraine : 
+   -- entraine : La remise à zero de la mise et le sortie du jeu si l'argent est nul
    procedure finManche(joueur : in out T_Joueur); 
    
    -- Fonction permettant de faire jouer l'action choisie par le joueur
@@ -50,6 +50,11 @@ package P_Joueur is
    -- - Entree : un joueur
    -- - Sortie : l'argent de ce joueur
    function getArgent(joueur : in T_Joueur) return Integer;
+   
+   -- Fonction permettant de savoir combien un joueur a mise en tout dans le tour
+   -- - Entree : un joueur
+   -- - Sortie : la mise pariee par ce joueur
+   function getMise(joueur: in T_Joueur) return Natural;
    
    -- Fonction qui permet de recuperer le nom d'un joueur
    -- - Entree : un joueur

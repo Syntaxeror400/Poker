@@ -130,11 +130,11 @@ package body GUI is
       Put_line(getName(joueur)& " : C'est a votre tour.");
       decodeString(toString(table));
       decodeString(getPots(table, jPos));
+      decodeString(toString(joueur));
       
       done := false;								-- Ne passe jamais a vrai
       while not done loop
          Put_Line("Que voulez-vous faire ? Vous pouvez :");
-         put_line("- Voire vos cartes : 'main'");
          put_line("- Vous coucher : 'coucher'");
          Put_Line("- Suivre la mise actuelle (checker si elle est de 0) : 'suivre'");
          Put_Line("- Miser ou surmiser : 'miser'");
@@ -144,10 +144,7 @@ package body GUI is
          ok := false;
          while not ok loop
             str := To_Unbounded_String(Get_Line);
-            if str = "main" then
-               Put("Votre main est : ");
-               Put_Line(montrerMain(joueur));
-            elsif str = "coucher" then
+            if str = "coucher" then
                Put_Line("Etes vous sur de vouloir vous coucher ?(y/n)");
                if To_Lower(Get_Line(1)) = 'y'then
                   declare
@@ -202,6 +199,11 @@ package body GUI is
    procedure mustMiseMore is
    begin
       Put_Line("Vous devez miser plus du double de la mise actuelle");
+   end;
+   
+   procedure hasToAllIn is
+   begin
+      Put_Line("Vous n'avez pas assez d'argent pour cela, vous devez faire tapis");
    end;
    
    

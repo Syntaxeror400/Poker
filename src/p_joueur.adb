@@ -36,10 +36,11 @@ Package body P_Joueur is
          Miser(joueur, blinde);
       end if;
    end;
-   
+      
    procedure finManche(joueur : in out T_Joueur) is 
    begin
-      null;
+      joueur.mise := 0;
+      joueur.en_jeu := joueur.argent > 0;
    end;
    
    function jouerTour(miseActuelle : in Natural; joueur : in out T_Joueur; action : in T_Action) return boolean is
@@ -65,6 +66,11 @@ Package body P_Joueur is
       return joueur.argent;
    end;
    
+   function getMise(joueur: in T_Joueur) return Natural is
+   begin
+      return joueur.mise;
+   end;
+   
    function getName(joueur : in T_Joueur) return String is
    begin
       return To_String(joueur.nom);
@@ -80,7 +86,7 @@ Package body P_Joueur is
    begin
       str := "Joueur : "& joueur.nom &", argent : " & Integer'image(joueur.argent)
         & " et sa mise est de " & Integer'Image(joueur.mise) 
-        & ". Ses cartes sont " & To_Unbounded_String(montrermain(joueur)) & " et il/elle " ;
+        & ".\Ses cartes sont " & To_Unbounded_String(montrermain(joueur)) & " et il/elle " ;
       if joueur.En_jeu = True then
          str := str  & "est en jeu.";
       else

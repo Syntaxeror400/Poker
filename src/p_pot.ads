@@ -11,6 +11,11 @@ package P_Pot is
    -- - Effets : Remet a zero l'argent du pot et affecte la nouvelle table de joueurs
    function creerPot(joueurs : in posArray) return T_Pot;
    
+   -- Fonction permettant de cloner un pot
+   -- - Entree : un pot
+   -- - Sortie : un clone du pot
+   function clonerPot(pot : in T_Pot) return T_Pot;
+   
    -- Procedure permettant d'ajouter de l'argent a un pot
    -- - Entrees :	pot : le pot concerne
    --		montant : la somme a ajouter au pot
@@ -26,6 +31,9 @@ package P_Pot is
    -- Entree : le pot concerne
    -- Sortie : la table contenant les indexs des joueurs ayant acces au pot
    function getJoueurs(pot :in T_Pot) return posArray;
+   
+   -- Fonction permettant de savoir combien de joueurs ont acces au pot
+   function getnJoueurs(pot :in T_Pot) return Positive;
    
    -- Fonction permettant de savoir si un joueur est dans un pot
    -- - Entree : le joueur en question
