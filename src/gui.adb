@@ -20,6 +20,8 @@ package body GUI is
       n : Integer;
       ok : boolean;
    begin
+      printBootUp;
+      
       Put_Line("Combien de joueurs voulez vous ajouter dans la partie ? Attention,c'est impossible de le changer par la suite !)");
       get(n);
       Skip_Line;
@@ -91,8 +93,8 @@ package body GUI is
             Put_line("Quel est la petite blinde ?");
             get(blinde(1));
             skip_Line;
-            if money >0 then
-               Put_Line(Integer'Image(money)& ", est-ce bon ? (y/n)");
+            if blinde(1) >0 then
+               Put_Line(Integer'Image(blinde(1))& ", est-ce bon ? (y/n)");
                ok := to_lower(Get_Line(1))= 'y';
             else
                Put_Line("Il faut un montant minimum de 0 !");
@@ -104,8 +106,8 @@ package body GUI is
             Put_line("Quel est la grosse blinde ?");
             get(blinde(2));
             skip_Line;
-            if money >0 then
-               Put_Line(Integer'Image(money)& ", est-ce bon ? (y/n)");
+            if blinde(2) >0 then
+               Put_Line(Integer'Image(blinde(2))& ", est-ce bon ? (y/n)");
                ok := to_lower(Get_Line(1))= 'y';
             else
                Put_Line("Il faut un montant minimum de "& Integer'Image(blinde(1))&" !");
@@ -127,10 +129,14 @@ package body GUI is
       mise : Natural;
       str : Unbounded_String;
    begin
+      New_Line;
+      New_Line;
+      Put_Line("----------");
       Put_line(getName(joueur)& " : C'est a votre tour.");
       decodeString(toString(table));
       decodeString(getPots(table, jPos));
       decodeString(toString(joueur));
+      New_Line;
       
       done := false;								-- Ne passe jamais a vrai
       while not done loop
@@ -167,7 +173,7 @@ package body GUI is
                get(mise);
                Skip_Line;
                
-               while (not(mise = 0)) or mise < getMiseMax(table) loop
+               while not (mise = 0 or mise > getMiseMax(table)) loop
                   Put_Line("La mise doit depasser "& Integer'Image(getMiseMax(table))& "(0 pour annuler)");
                   get(mise);
                   Skip_Line;
@@ -198,12 +204,27 @@ package body GUI is
    
    procedure mustMiseMore is
    begin
-      Put_Line("Vous devez miser plus du double de la mise actuelle");
+      Put_Line("Vous devez miser au moins le double de la mise actuelle");
    end;
    
    procedure hasToAllIn is
    begin
       Put_Line("Vous n'avez pas assez d'argent pour cela, vous devez faire tapis");
+   end;
+   
+   procedure winRound(joueur : String; argent : Natural) is
+   begin
+      Put_Line(joueur& " a gagne "& Integer'Image(argent));
+   end;
+   
+   procedure winGame(joueur : String) is
+   begin
+      Put_Line(joueur& "est le vainqueur final !!");
+   end;
+   
+   procedure mustPay is
+   begin
+      Put_Line("Vous etes oblige de payer pour pouvoir rentrer au premier tour !");
    end;
    
    

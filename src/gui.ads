@@ -28,6 +28,15 @@ package GUI is
    -- Message pour indiquer qu'il faut all in
    procedure hasToAllIn;
    
+   -- Message lors d'un gain de pot
+   procedure winRound(joueur : String; argent : Natural);
+   
+   -- Message de fin de partie
+   procedure winGame(joueur : String);
+   
+   -- Message lors d'un check au premier tour
+   procedure mustPay;
+   
    -- Procedure permettant d'afficher plusieurs lignes en partant d'une chaine de caracteres
    -- - Entree : la chaine de caractere
    -- - Autre : execute le retour de ligne sur le caractere '\'

@@ -96,11 +96,11 @@ Package body P_Joueur is
    begin
       str := "Joueur : "& joueur.nom &", argent : " & Integer'image(joueur.argent)
         & " et sa mise est de " & Integer'Image(joueur.mise) 
-        & ".\Ses cartes sont " & To_Unbounded_String(montrermain(joueur)) & " et il/elle " ;
+        & ".\Ses cartes sont " & To_Unbounded_String(montrermain(joueur));
       if joueur.En_jeu = True then
-         str := str  & "est en jeu.";
+         str := str& "\Le joueur est en jeu.";
       else
-         str := str & "n'est pas en jeu";
+         str := str& "\Le joueur n'est pas en jeu.";
       end if; 
       return To_String(str);
    end;
@@ -114,7 +114,7 @@ Package body P_Joueur is
          joueur.argent := joueur.argent - montant;
          joueur.mise := joueur.mise + montant;
       else
-         raise Has_To_All_In_Exception;
+         raise Has_To_All_In_Exception with "name :"& To_String(joueur.nom);
       end if;
    end;
    

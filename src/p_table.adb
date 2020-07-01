@@ -7,24 +7,39 @@ Package body P_table is
    
    procedure Lancer_Partie is
       reste : Natural := 0;
-      playing, done, endOfGame, allIn : boolean := true;
+      playing, done, endOfGame, allIn, masterAllIn : boolean := true;
       nb_joueurs : Natural := gui.getNJoueurs;
    begin
       declare
          table : T_Table(nb_joueurs);
       begin
+         resetGenerator;							-- On initialise l'aleatoire
          table := gui.makeTable(nb_joueurs);
          
-         while not lastOneStanding(table, false, true) loop							-- Tant qu'il y a plus d'un joueur
-            Debut_manche(table, reste);
+         while not lastOneStanding(table, false, true) loop			-- Tant qu'il y a plus d'un joueur
+            Debut_manche(table, reste, masterAllIn);
             endOfGame := false;
-            while not endOfGame loop
-               allIn := false;
-               while playing loop
+            while not endOfGame loop						-- Boucle de manche
+               if masterAllIn then
+                  allIn := true;
+                  masterAllIn := False;
+               else
+                  allIn := False;
+               end if;
+               if table.nb_cartes_ouvertes >0 then
+                  table.index_joueur_actif := table.index_dealer;
                   joueurSuivant(table,true,true);
-                  playing := table.index_joueur_actif = table.joueurs_mise_max;
-                  if isPlaying(table.joueurs(table.index_joueur_actif)) then	-- On ne fait jouer que les joueurs actifs
+               end if;
+               
+               playing := true;
+               while playing loop						-- Boucle d'un tour de table
+                  joueurSuivant(table,true,true);				-- On ne fait jouer que les joueurs actifs
+                  if isPlaying(table.joueurs(table.index_joueur_actif)) and getArgent(table.joueurs(table.index_joueur_actif)) > 0 then
                      done := false;
+                     playing := not(table.index_joueur_actif = table.joueurs_mise_max);
+                     if not playing then
+                        done := true;
+                     end if;
                      while not done loop					-- Tant qu'une action valide n'a pas etee choisie
                         declare
                            act : T_Action := gui.playTurn(table, table.joueurs(table.index_joueur_actif), table.index_joueur_actif);
@@ -32,11 +47,12 @@ Package body P_table is
                            case getElem(act) is
                            when Miser =>
                               if table.nb_relances < 3 then			-- On verifie qu'il y a possibilite de relance
-                                 if getMise(act) > table.mise_max*2 then
+                                 if getMise(act) >= table.mise_max*2 then
                                     done := jouerTour(table.mise_max, table.joueurs(table.index_joueur_actif), act);
                                     if done then
                                        table.mise_max := getMise(act);
                                        table.joueurs_mise_max := table.index_joueur_actif;
+                                       playing := true;
                                     end if;
                                  else
                                     gui.mustMiseMore;
@@ -47,14 +63,20 @@ Package body P_table is
                            when Tapis =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
                               allIn := done;
-                           when others =>
+                           when Suivre =>
+                              if table.nb_cartes_ouvertes < 3 and table.mise_max < table.blindes(2) then
+                                 gui.mustPay;					-- Avant le flop et pas de mise
+                              else
+                                 done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
+                              end if;
+                           when Coucher =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
                            end case;
                         exception
                            when Has_To_All_In_Exception =>
                               gui.hasToAllIn;
                               done := false;
-                           when others => null;
+                           when others => raise;
                         end;
                      end loop;
                   end if;
@@ -62,6 +84,14 @@ Package body P_table is
                
                if allIn then
                   updatePots(table);
+               else
+                  reste := 0;
+                  for i in 1..table.nb_joueurs loop
+                     if isPlaying(table.joueurs(i)) then
+                        reste := reste + getMise(table.joueurs(i));
+                     end if;
+                  end loop;
+                  addArgentToLastPot(table, reste);
                end if;
                
                for i in 1..table.nb_joueurs loop
@@ -74,9 +104,12 @@ Package body P_table is
                   endOfGame := true;
                end if;
             end loop;
-               
+            
             Fin_manche(table, reste);
          end loop;
+         
+         gui.winGame("Test");
+         
       end;
    end;
    
@@ -88,7 +121,7 @@ Package body P_table is
       table.blindes(2) := 50;
       
       table.nb_relances := 0;
-      table.index_dealer := 1;
+      table.index_dealer := 0;
       table.index_joueur_actif := 1;
       table.mise_max := 0;
       table.joueurs_mise_max := 0;
@@ -126,7 +159,7 @@ Package body P_table is
       else
          ret := ret& "Il n'y a pas encore de carte ouverte";
       end if;
-      ret := ret& "\\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
+      ret := ret& "\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
       ret := ret& "La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
       return To_String(ret);
    end;
@@ -180,9 +213,10 @@ Package body P_table is
       end case;
    end;
       
-   procedure Debut_manche (table : in out T_Table; reste : in Natural) is
+   procedure Debut_manche (table : in out T_Table; reste : in Natural; allIn : out boolean) is
       nAlive : Natural := 0;
    begin
+      allIn := false;
       for i in 1..table.nb_joueurs loop
          if isPlaying(table.joueurs(i)) then
             nAlive := nAlive +1;
@@ -196,7 +230,8 @@ Package body P_table is
          Distribuer_main(table);
          
          table.nb_relances := 0;
-         table.mise_max := 0;
+         table.index_dealer := table.index_dealer+1;
+         table.mise_max := table.blindes(2);
          table.joueurs_mise_max := 0;
          table.nb_cartes_ouvertes := 0;
          clear(table.pots);
@@ -219,7 +254,11 @@ Package body P_table is
          poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(1));
          joueurSuivant(table, true, false);					-- Grosse blinde
          poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(2));
-         joueurSuivant(table, true, false);
+         table.joueurs_mise_max := table.index_joueur_actif;
+      exception
+         when Has_To_All_In_Exception =>
+            allIn := True;
+            when others => raise;
       end;
    end;
    
@@ -227,34 +266,35 @@ Package body P_table is
    begin
       reste :=0;
       while Integer(Length(table.pots)) > 0 loop
-         declare
-            players : posArray := getJoueurs(Last_Element(table.pots));
-            cartes : T_Deck(1..(2+table.nb_cartes_ouvertes));
-            tempCartes : T_Deck(1..2);
-            tempCombi, bestCombi : T_Combinaison;
-            bestJoueur : natArray(1..players'Length) := (others=>0);
-            nBests : Natural :=0;
-         begin
-            if players'Length > 1 then
-               if table.nb_cartes_ouvertes > 0 then				-- On prepare les cartes ouvertes
-                  for i in 3..2+table.nb_cartes_ouvertes loop
-                     cartes(i) := table.cartes_ouvertes(i-2);
-                  end loop;
-               end if;								-- On initialise le premier joueur comme meilleur
-
-               nBests := 1;
-               bestJoueur(1) := 1;
-               tempCartes := getCartes(table.joueurs(players(1)));
-               cartes(1) := tempCartes(1);
-               cartes(2) := tempCartes(2);
-               bestCombi := trouverCombinaison(cartes);
-               
-               for i in (players'First+1)..players'Last loop
-                  tempCartes := getCartes(table.joueurs(players(i)));
+         if getPotArgent(Last_Element(table.pots)) > 0 then
+            declare
+               players : posArray := getJoueurs(Last_Element(table.pots));
+               cartes : T_Deck(1..(2+table.nb_cartes_ouvertes));
+               tempCartes : T_Deck(1..2);
+               tempCombi, bestCombi : T_Combinaison;
+               bestJoueur : natArray(1..players'Length) := (others=>0);
+               nBests : Natural :=0;
+            begin
+               if players'Length > 1 then
+                  if table.nb_cartes_ouvertes > 0 then				-- On prepare les cartes ouvertes
+                     for i in 3..2+table.nb_cartes_ouvertes loop
+                        cartes(i) := table.cartes_ouvertes(i-2);
+                     end loop;
+                  end if;							-- On initialise le premier joueur comme meilleur
+                                 
+                  nBests := 1;
+                  bestJoueur(1) := 1;
+                  tempCartes := getCartes(table.joueurs(players(1)));
                   cartes(1) := tempCartes(1);
                   cartes(2) := tempCartes(2);
-                  tempCombi := trouverCombinaison(cartes);
-                  case compaCombi(bestCombi, tempCombi) is
+                  bestCombi := trouverCombinaison(cartes);
+                  
+                  for i in (players'First+1)..players'Last loop
+                     tempCartes := getCartes(table.joueurs(players(i)));
+                     cartes(1) := tempCartes(1);
+                     cartes(2) := tempCartes(2);
+                     tempCombi := trouverCombinaison(cartes);
+                     case compaCombi(bestCombi, tempCombi) is
                      when inf =>						-- Si la combinaison se fait battre, on prend un nouveau gagnant
                         bestJoueur := (others =>0);
                         nBests := 1;
@@ -265,27 +305,31 @@ Package body P_table is
                         bestJoueur(nBests) := i;
                      when sup =>
                         null;							-- La meilleur combinaison est plus forte
-                  end case;
-               end loop;
-               
-               if nBests > 1 then
-                  declare
-                     mise : Natural := getPotArgent(Last_Element(table.pots));
-                  begin								-- Chaque joueur gagne un fraction du pot et le reste est
-                     reste := reste + mise mod nBests;				--	conserve pour la partie suivante
-                     mise := mise / nBests;
-                     for i in 1..nBests loop
-                        gagnerMise(mise, table.joueurs(players(bestJoueur(i))));
-                     end loop;
-                  end;
-               else								-- Cas d'un seul gagnant
-                  gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(bestJoueur(1))));
+                     end case;
+                  end loop;
+                  
+                  if nBests > 1 then
+                     declare
+                        mise : Natural := getPotArgent(Last_Element(table.pots));
+                     begin							-- Chaque joueur gagne un fraction du pot et le reste est
+                        reste := reste + mise mod nBests;			--	conserve pour la partie suivante
+                        mise := mise / nBests;
+                        for i in 1..nBests loop
+                           gagnerMise(mise, table.joueurs(players(bestJoueur(i))));
+                           gui.winRound(getName(table.joueurs(players(bestJoueur(i)))), mise);
+                        end loop;
+                     end;
+                  else								-- Cas d'un seul gagnant
+                     gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(bestJoueur(1))));
+                     gui.winRound(getName(table.joueurs(players(bestJoueur(1)))), getPotArgent(Last_Element(table.pots)));
+                  end if;
+               else								-- Un joueur seul dans le pot ne peut que gagner
+                  gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(1)));
+                  gui.winRound(getName(table.joueurs(players(1))),getPotArgent(Last_Element(table.pots)));
                end if;
-            else								-- Un joueur seul dans le pot ne peut que gagner
-               gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(1)));
-            end if;
-            Delete_Last(table.pots);
-         end;
+            end;
+         end if;
+         Delete_Last(table.pots);
       end loop;
       
       for i in 1..table.nb_joueurs loop

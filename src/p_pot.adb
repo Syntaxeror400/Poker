@@ -3,16 +3,12 @@ use Ada.Strings.Unbounded;
 
 package body P_Pot is
    
-   procedure creerPot(n : in nJoueurs; joueurs :in posArray) is
-      ret : T_Pot(n);
+   function creerPot(joueurs :in posArray) return T_Pot is
+      ret : T_Pot(joueurs'Length);
    begin
       ret.argent := 0;
-      for i in 1..ret.nJoueurs loop
-         if i <= joueurs'Length then
+      for i in 1..joueurs'Length loop
             ret.joueurs(i) := joueurs(i);
-         else
-            ret.joueurs(i) := 0;
-         end if;
       end loop;
       return ret;
    end;
@@ -46,9 +42,9 @@ package body P_Pot is
       return pot.nJoueurs;
    end;
    
-   function isJoueurIn(pot :in T_Pot; joueur : in Positive) return booleanis
+   function isJoueurIn(pot :in T_Pot; joueur : in Positive) return boolean is
    begin
-      for i in 1..nJoueurs loop
+      for i in 1..pot.nJoueurs loop
          if pot.joueurs(i) = joueur then
               return true;
          end if;

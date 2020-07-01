@@ -79,7 +79,7 @@ private
    
    -- Procedure permettant de commencer une manche
    -- - Entree : la table concernee
-   procedure Debut_manche(table : in out T_Table; reste : in Natural);
+   procedure Debut_manche(table : in out T_Table; reste : in Natural; allIn : out boolean);
    
    -- Procedure permettant de mettre fin a une manche (notifier les joueurs)
    -- - Entree : la table concernee
