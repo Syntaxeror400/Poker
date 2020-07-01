@@ -43,6 +43,11 @@ Package body P_Joueur is
       joueur.en_jeu := joueur.argent > 0;
    end;
    
+   procedure finTour(joueur : in out T_Joueur) is
+   begin
+      joueur.mise :=0;
+   end;
+   
    function jouerTour(miseActuelle : in Natural; joueur : in out T_Joueur; action : in T_Action) return boolean is
    begin
       case getElem(action) is
@@ -74,6 +79,11 @@ Package body P_Joueur is
    function getName(joueur : in T_Joueur) return String is
    begin
       return To_String(joueur.nom);
+   end;
+   
+   function getCartes(joueur : in T_Joueur) return T_Deck is
+   begin
+      return clonerDeck(joueur.main);
    end;
    
    function isPlaying(joueur : in T_Joueur) return boolean is

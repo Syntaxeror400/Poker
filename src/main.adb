@@ -1,9 +1,7 @@
-with Ada.Text_IO;
+with P_table;
 
 procedure main is
 begin
-   -- A coder, lancer la boucle avec un appel a la fonction 'lancer' de P_Table
-   Ada.Text_IO.Put_Line("En cours de construction !");
-
+   P_table.Lancer_Partie;
 end main;
 

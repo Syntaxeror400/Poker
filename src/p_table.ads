@@ -49,9 +49,6 @@ private
    package P_Alea_Cartes is new P_Aleatoire(T_Element => T_Carte,T_Liste   => T_Deck);
    use P_Alea_Cartes;
    
-   -- Vecteur de pots
---   Type vecPot is new Vector with null record;
-   
    -- Type qui combine un deck et l'index de la carte pour piocher la suivante
    Type T_FullDeck is record
       deck : T_Deck(1..P_Carte.nombreMaxCartes);
@@ -82,11 +79,11 @@ private
    
    -- Procedure permettant de commencer une manche
    -- - Entree : la table concernee
-   procedure Debut_manche(table : in out T_Table; nAlive : in Natural);
+   procedure Debut_manche(table : in out T_Table; reste : in Natural);
    
    -- Procedure permettant de mettre fin a une manche (notifier les joueurs)
    -- - Entree : la table concernee
-   procedure Fin_manche(table : in out T_Table);
+   procedure Fin_manche(table : in out T_Table; reste : out Natural);
    
    -- Procedure permettant de melanger le deck
    -- - Entree : la table concernee
@@ -126,4 +123,17 @@ private
    -- - Autre : clone le pot et ajoute l'argent avant de le remettre dans un vecteur
    procedure addArgentToLastPot(table : in out T_Table; montant : in Positive);
    
-end P_table;      
+   -- Fonction de comparaison utilisee pour le double tri
+   function natCompa(n1 : Natural; n2 :Natural) return boolean;
+   
+   -- Creation du tri double pour la creation de pots
+   procedure doubleSort is new triDouble(T_Element1 => Natural,
+                                         T_Element2 => Natural,
+                                         T_Liste1   => natArray,
+                                         T_Liste2   => natArray,
+                                         comp => natCompa);
+   
+   
+   
+   
+end P_table;

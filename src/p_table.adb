@@ -6,7 +6,7 @@ Package body P_table is
    
    
    procedure Lancer_Partie is
-      nAlive : Natural;
+      reste : Natural := 0;
       playing, done, endOfGame, allIn : boolean := true;
       nb_joueurs : Natural := gui.getNJoueurs;
    begin
@@ -15,9 +15,8 @@ Package body P_table is
       begin
          table := gui.makeTable(nb_joueurs);
          
-         nAlive := table.nb_joueurs;
-         while nAlive > 1 loop							-- Tant qu'il y a plus d'un joueur
-            Debut_manche(table, nAlive);
+         while not lastOneStanding(table, false, true) loop							-- Tant qu'il y a plus d'un joueur
+            Debut_manche(table, reste);
             endOfGame := false;
             while not endOfGame loop
                allIn := false;
@@ -35,7 +34,10 @@ Package body P_table is
                               if table.nb_relances < 3 then			-- On verifie qu'il y a possibilite de relance
                                  if getMise(act) > table.mise_max*2 then
                                     done := jouerTour(table.mise_max, table.joueurs(table.index_joueur_actif), act);
-                                    table.joueurs_mise_max := table.index_joueur_actif;
+                                    if done then
+                                       table.mise_max := getMise(act);
+                                       table.joueurs_mise_max := table.index_joueur_actif;
+                                    end if;
                                  else
                                     gui.mustMiseMore;
                                  end if;
@@ -44,7 +46,7 @@ Package body P_table is
                               end if;
                            when Tapis =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
-                              allIn := true;
+                              allIn := done;
                            when others =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
                            end case;
@@ -62,6 +64,10 @@ Package body P_table is
                   updatePots(table);
                end if;
                
+               for i in 1..table.nb_joueurs loop
+                  finTour(table.joueurs(i));
+               end loop;
+               
                if table.nb_cartes_ouvertes < 5 then
                   Poser_cartes_ouvertes(table);
                else
@@ -69,14 +75,7 @@ Package body P_table is
                end if;
             end loop;
                
-            Fin_manche(table);
-            
-            nAlive := 0;
-            for i in 1..table.nb_joueurs loop
-               if getArgent(table.joueurs(i)) > 0 then
-                  nAlive := nAlive +1;
-               end if;
-            end loop;
+            Fin_manche(table, reste);
          end loop;
       end;
    end;
@@ -181,38 +180,114 @@ Package body P_table is
       end case;
    end;
       
-   procedure Debut_manche (table : in out T_Table; nAlive : in Natural) is
-      nPot : posArray(1..nAlive);
-      i : Positive := 1;
+   procedure Debut_manche (table : in out T_Table; reste : in Natural) is
+      nAlive : Natural := 0;
    begin
-      Melange_deck(table);
-      Distribuer_main(table);
-      
-      table.nb_relances := 0;
-      table.mise_max := 0;
-      table.joueurs_mise_max := 0;
-      table.nb_cartes_ouvertes := 0;
-      clear(table.pots);
-      
-      for n in 1..table.nb_joueurs loop						-- On prepare la liste de joueurs
-         if getArgent(table.joueurs(n)) > 0 then
-            nPot(i) := n;
-            i := i+1;
+      for i in 1..table.nb_joueurs loop
+         if isPlaying(table.joueurs(i)) then
+            nAlive := nAlive +1;
          end if;
       end loop;
-      
-      append(table.pots, creerPot(nPot));					-- On cree le premier pot
-      
-      table.index_joueur_actif := table.index_dealer;
-      joueurSuivant(table, true, false);					-- Petite blinde
-      poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(1));
-      joueurSuivant(table, true, false);					-- Grosse blinde
-      poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(2));
-      joueurSuivant(table, true, false);
+      declare
+         nPot : posArray(1..nAlive);
+         i : Positive := 1;
+      begin
+         Melange_deck(table);
+         Distribuer_main(table);
+         
+         table.nb_relances := 0;
+         table.mise_max := 0;
+         table.joueurs_mise_max := 0;
+         table.nb_cartes_ouvertes := 0;
+         clear(table.pots);
+         
+         for n in 1..table.nb_joueurs loop						-- On prepare la liste de joueurs
+            if getArgent(table.joueurs(n)) > 0 then
+            nPot(i) := n;
+               i := i+1;
+            end if;
+         end loop;
+         
+         append(table.pots, creerPot(nPot));					-- On cree le premier pot
+                                                 
+         if reste >0 then							-- S'il reste de l'argent non partage
+            addArgentToLastPot(table, reste);
+         end if;
+         
+         table.index_joueur_actif := table.index_dealer;
+         joueurSuivant(table, true, false);					-- Petite blinde
+         poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(1));
+         joueurSuivant(table, true, false);					-- Grosse blinde
+         poserBlinde(table.joueurs(table.index_joueur_actif), table.blindes(2));
+         joueurSuivant(table, true, false);
+      end;
    end;
    
-   procedure Fin_manche (table : in out T_Table) is
+   procedure Fin_manche (table : in out T_Table; reste : out Natural) is
    begin
+      reste :=0;
+      while Integer(Length(table.pots)) > 0 loop
+         declare
+            players : posArray := getJoueurs(Last_Element(table.pots));
+            cartes : T_Deck(1..(2+table.nb_cartes_ouvertes));
+            tempCartes : T_Deck(1..2);
+            tempCombi, bestCombi : T_Combinaison;
+            bestJoueur : natArray(1..players'Length) := (others=>0);
+            nBests : Natural :=0;
+         begin
+            if players'Length > 1 then
+               if table.nb_cartes_ouvertes > 0 then				-- On prepare les cartes ouvertes
+                  for i in 3..2+table.nb_cartes_ouvertes loop
+                     cartes(i) := table.cartes_ouvertes(i-2);
+                  end loop;
+               end if;								-- On initialise le premier joueur comme meilleur
+
+               nBests := 1;
+               bestJoueur(1) := 1;
+               tempCartes := getCartes(table.joueurs(players(1)));
+               cartes(1) := tempCartes(1);
+               cartes(2) := tempCartes(2);
+               bestCombi := trouverCombinaison(cartes);
+               
+               for i in (players'First+1)..players'Last loop
+                  tempCartes := getCartes(table.joueurs(players(i)));
+                  cartes(1) := tempCartes(1);
+                  cartes(2) := tempCartes(2);
+                  tempCombi := trouverCombinaison(cartes);
+                  case compaCombi(bestCombi, tempCombi) is
+                     when inf =>						-- Si la combinaison se fait battre, on prend un nouveau gagnant
+                        bestJoueur := (others =>0);
+                        nBests := 1;
+                        bestJoueur(1) := i;
+                        bestCombi := tempCombi;
+                     when ega =>						-- En cas d'egalite on ajoute le joueur a la liste des gagnants
+                        nBests := nBests+1;
+                        bestJoueur(nBests) := i;
+                     when sup =>
+                        null;							-- La meilleur combinaison est plus forte
+                  end case;
+               end loop;
+               
+               if nBests > 1 then
+                  declare
+                     mise : Natural := getPotArgent(Last_Element(table.pots));
+                  begin								-- Chaque joueur gagne un fraction du pot et le reste est
+                     reste := reste + mise mod nBests;				--	conserve pour la partie suivante
+                     mise := mise / nBests;
+                     for i in 1..nBests loop
+                        gagnerMise(mise, table.joueurs(players(bestJoueur(i))));
+                     end loop;
+                  end;
+               else								-- Cas d'un seul gagnant
+                  gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(bestJoueur(1))));
+               end if;
+            else								-- Un joueur seul dans le pot ne peut que gagner
+               gagnerMise(getPotArgent(Last_Element(table.pots)),table.joueurs(players(1)));
+            end if;
+            Delete_Last(table.pots);
+         end;
+      end loop;
+      
       for i in 1..table.nb_joueurs loop
          finManche(table.joueurs(i));
       end loop;
@@ -303,6 +378,7 @@ Package body P_table is
    
    procedure updatePots(table : in out T_Table) is
       n : Integer := 0;
+      sumMises : Natural := 0;
    begin
       for i in 1..table.nb_joueurs loop
          if isPlaying(table.joueurs(i)) and then getMise(table.joueurs(i)) < table.mise_max then
@@ -322,16 +398,18 @@ Package body P_table is
                end if;
             end loop;
             
-            for i in 1..n loop						-- Et leur mises respectives
+            for i in 1..n loop							-- Et leur mises respectives
                mises(i) := getMise(table.joueurs(listJ(i)));
             end loop;
             
             if n =1 then							-- Si il n'y a que un joueur different
+               sumMises := 0;
                for i in 1..table.nb_joueurs loop
                   if isPlaying(table.joueurs(i)) and getMise(table.joueurs(i)) >= mises(1) then
-                     addArgent(Last_Element(table.pots), mises(1));
+                     sumMises := sumMises+mises(1);
                   end if;
                end loop;
+               addArgentToLastPot(table,sumMises);
                
                n := 0;
                for i in 1..table.nb_joueurs loop				-- On recupere le nombre de joueur pour le nouveau pot
@@ -352,10 +430,11 @@ Package body P_table is
                   end loop;
                   
                   Append(table.pots,creerPot(jList));
-                  
+                  sumMises := 0;
                   for i in 1..n loop
-                     addArgent(Last_Element(table.pots), getMise(table.joueurs(i))-mises(1));
+                     sumMises := sumMises + getMise(table.joueurs(jList(i)))-mises(1);
                   end loop;
+                  addArgentToLastPot(table,sumMises);
                end;
             else
                for i in 2..n loop						-- On compte le nombre de mises différentes
@@ -383,14 +462,42 @@ Package body P_table is
                            indexMisesDiff := indexMisesDiff+1;
                         end if;
                      end loop;
+                     
+                     doubleSort(misesDiff,jMisesDiff);
+                     
+                     for i in 1..(nMises+1) loop				-- Pour chacune des mises differentes il faut creer un pot
+                        declare							-- On les cree et le remplits un par un
+                           players : posArray(1..jMisesDiff(i));
+                           m : Positive := 1;
+                           alreadyPaid : Natural :=0;
+                        begin
+                           sumMises := 0;
+                           for k in 1..table.nb_joueurs loop			-- On trouve les joueurs
+                              if isPlaying(table.joueurs(k)) and getMise(table.joueurs(k)) >= misesDiff(i) then
+                                 sumMises := sumMises + 1;
+                                 players(m) := k;
+                                 m := m+1;
+                              end if;
+                           end loop;
+                           for k in 1..(i-1) loop				-- On trouve ce qui a ete distribue dans les pots precedents
+                              alreadyPaid := alreadyPaid + misesDiff(k);
+                           end loop;
+                           
+                           sumMises := sumMises*(misesDiff(i)-alreadyPaid);	-- On ne fait payer que la bonne chose avant de creer un nouveau pot
+                           addArgentToLastPot(table, sumMises);
+                           Append(table.pots, creerPot(players));
+                        end;
+                     end loop;
                   end;
                else								-- S'il n'y a qu'une mise
+                  sumMises := 0;
                   for i in 1..table.nb_joueurs loop
                      if isPlaying(table.joueurs(i)) and getMise(table.joueurs(i)) >= mises(1) then
-                        addArgent(Last_Element(table.pots), mises(1));
+                        sumMises := sumMises + mises(1);
                      end if;
                   end loop;
-               
+                  addArgentToLastPot(table,sumMises);
+                  
                   n := 0;
                   for i in 1..table.nb_joueurs loop				-- On recupere le nombre de joueur pour le nouveau pot
                      if isPlaying(table.joueurs(i)) and getMise(table.joueurs(i)) > mises(1) then
@@ -410,21 +517,25 @@ Package body P_table is
                      end loop;
                   
                      Append(table.pots,creerPot(jList));
-                  
+                     
+                     sumMises := 0;
                      for i in 1..n loop
-                        addArgent(Last_Element(table.pots), getMise(table.joueurs(i))-mises(1));
+                        sumMises := sumMises + getMise(table.joueurs(jList(i)))-mises(1);
                      end loop;
+                     addArgentToLastPot(table,sumMises);
                   end;
                end if;
             end if;
          end;
       else									-- Si tous les joueurs on paye la meme chose
+         sumMises := 0;
          for i in 1..table.nb_joueurs loop
-            addArgent(Last_Element(table.pots), getMise(table.joueurs(i)));
+            sumMises := sumMises + getMise(table.joueurs(i));
             if isPlaying(table.joueurs(i)) and getArgent(table.joueurs(i)) > 0 then
                n := n+1;
             end if;
          end loop;								-- On ajoute l'argent dans le pot et on cree un nouveau pot pour la suite
+         addArgentToLastPot(table,sumMises);
          declare
             jPots : posArray(1..n);
             k : Positive := 1;
@@ -446,5 +557,14 @@ Package body P_table is
       addArgent(nPot, montant);
       Replace_Element(table.pots, Last_Index(table.pots), nPot);
    end;
+   
+   
+   function natCompa(n1 : Natural; n2 :Natural) return boolean is
+   begin
+      return n1 > n2;								-- Mene a un tri dans l'ordre croissant
+   end;
+   
+   
+   
    
 end P_table;

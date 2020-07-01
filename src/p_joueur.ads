@@ -33,8 +33,13 @@ package P_Joueur is
       
    -- action : remet tous les compteurs de parties à 0 pour pouvoir commencer à jouer une nouvelle main
    -- E/S/ : joueur - T_Joueur
-   -- entraine : La remise à zero de la mise et le sortie du jeu si l'argent est nul
+   -- entraine : La remise à zero de la mise et la sortie du jeu si l'argent est nul
    procedure finManche(joueur : in out T_Joueur); 
+   
+   -- Procedure permettant de mettre fin a un tour de table
+   -- - Entree : le joueur
+   -- - Autre : remet a zero la mise
+   procedure finTour(joueur : in out T_Joueur);
    
    -- Fonction permettant de faire jouer l'action choisie par le joueur
    -- - Entree : le joueur, l'action a effectuer
@@ -60,6 +65,11 @@ package P_Joueur is
    -- - Entree : un joueur
    -- - Sortie : son nom
    function getName(joueur : in T_Joueur) return String;
+   
+   -- Fonction permettant de recuperer les cartes d'un joueur
+   -- - Entree : le joueur
+   -- - Sortie : ses cartes
+   function getCartes(joueur : in T_Joueur) return T_Deck;
    
    -- Fonction qui permet de savoir si le joueur est en jeu
    -- - Entree : le joueur

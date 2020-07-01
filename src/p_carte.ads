@@ -5,7 +5,7 @@ package P_Carte is
    
    Type T_Carte is private;							-- Type decrivant une carte
    Type T_Deck is Array (Positive range <>) of T_Carte;				-- Table de carte pour pouvoir uniformiser les type dans les methodes
-   Type T_Combinaison is limited private;					-- Type decrivant la valeur d'une combinaison de cartes
+   Type T_Combinaison is private;						-- Type decrivant la valeur d'une combinaison de cartes
    
    -- Fonction permettant de comparer deux cartes
    -- - Entrees : deux cartes
