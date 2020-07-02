@@ -7,7 +7,7 @@ Package body P_table is
    
    procedure Lancer_Partie is
       reste : Natural := 0;
-      playing, done, endOfGame, allIn, masterAllIn : boolean := true;
+      fresh,playing, done, endOfGame, allIn, masterAllIn, bigBlindFirst : boolean := true;
       nb_joueurs : Natural := gui.getNJoueurs;
    begin
       declare
@@ -18,7 +18,9 @@ Package body P_table is
          
          while not lastOneStanding(table, false, true) loop			-- Tant qu'il y a plus d'un joueur
             Debut_manche(table, reste, masterAllIn);
+            bigBlindFirst := true;
             endOfGame := false;
+            
             while not endOfGame loop						-- Boucle de manche
                if masterAllIn then
                   allIn := true;
@@ -28,21 +30,42 @@ Package body P_table is
                end if;
                if table.nb_cartes_ouvertes >0 then
                   table.index_joueur_actif := table.index_dealer;
-                  joueurSuivant(table,true,true);
                end if;
                
                playing := true;
+               fresh := true;
                while playing loop						-- Boucle d'un tour de table
                   joueurSuivant(table,true,true);				-- On ne fait jouer que les joueurs actifs
                   if isPlaying(table.joueurs(table.index_joueur_actif)) and getArgent(table.joueurs(table.index_joueur_actif)) > 0 then
                      done := false;
                      playing := not(table.index_joueur_actif = table.joueurs_mise_max);
+                     
+                     if fresh then
+                        table.mise_max := 0;
+                        table.joueurs_mise_max := table.index_joueur_actif;
+                        table.nb_relances := 0;
+                        
+                        playing := true;
+                        fresh := False;
+                     end if;
+                     
+                     if bigBlindFirst then-- A REFAIRE POUR IMPLEMENTER LA MEMOIRE DE LA GROSSE BLINDE
+                        if not playing then
+                           playing := True;
+                           bigBlindFirst := false;
+                        end if;
+                     else
+                        if table.nb_cartes_ouvertes < 3 then
+                           playing := false;
+                        end if;
+                     end if;
                      if not playing then
                         done := true;
                      end if;
                      while not done loop					-- Tant qu'une action valide n'a pas etee choisie
                         declare
-                           act : T_Action := gui.playTurn(table, table.joueurs(table.index_joueur_actif), table.index_joueur_actif);
+                           act : T_Action := gui.playTurn(table, table.joueurs(table.index_joueur_actif), table.index_joueur_actif,
+                                                          table.index_joueur_actif=table.index_dealer);
                         begin							-- On recupere l'action et on la traite
                            case getElem(act) is
                            when Miser =>
@@ -50,9 +73,11 @@ Package body P_table is
                                  if getMise(act) >= table.mise_max*2 then
                                     done := jouerTour(table.mise_max, table.joueurs(table.index_joueur_actif), act);
                                     if done then
+                                       if table.mise_max > 0 then
+                                          table.nb_relances := table.nb_relances +1;
+                                       end if;
                                        table.mise_max := getMise(act);
                                        table.joueurs_mise_max := table.index_joueur_actif;
-                                       playing := true;
                                     end if;
                                  else
                                     gui.mustMiseMore;
@@ -141,11 +166,6 @@ Package body P_table is
       table.blindes(1):=nMin;
    end;
    
-   function getMiseMax(table : in T_Table) return Natural is
-   begin
-      return table.mise_max;
-   end;
-   
    
    function toString (table : in T_Table) return String is
       ret : Unbounded_String;
@@ -159,8 +179,11 @@ Package body P_table is
       else
          ret := ret& "Il n'y a pas encore de carte ouverte";
       end if;
-      ret := ret& "\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
-      ret := ret& "La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
+      if table.mise_max > 0 then
+         ret := ret& "\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
+      else
+         ret := ret& "La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
+      end if;
       return To_String(ret);
    end;
    
@@ -168,9 +191,9 @@ Package body P_table is
       ret : Unbounded_String;
       pots : posArray := findPots(table, joueur);
    begin
-      ret := To_Unbounded_String("Les pots qui sont ouverts au joueur sont : ");
+      ret := To_Unbounded_String("Les pots qui sont ouverts au joueur sont : \");
       for i in pots'Range loop
-         ret := ret& " - "& Integer'Image(getPotArgent(table.pots(pots(i))))& "\";
+         ret := ret& "  - "& Integer'Image(getPotArgent(table.pots(pots(i))))& "\";
       end loop;
       return To_String(ret);
    end;
@@ -595,11 +618,16 @@ Package body P_table is
       end if;
    end;
    
-   procedure addArgentToLastPot(table : in out T_Table; montant : in Positive) is
-      nPot : T_Pot := clonerPot(Last_Element(table.pots));
+   procedure addArgentToLastPot(table : in out T_Table; montant : in Integer) is
    begin
-      addArgent(nPot, montant);
-      Replace_Element(table.pots, Last_Index(table.pots), nPot);
+      if montant>0 and then Integer(Length(table.pots))>1 then
+         declare
+            nPot : T_Pot := clonerPot(Last_Element(table.pots));
+         begin
+            addArgent(nPot, montant);
+            Replace_Element(table.pots, Last_Index(table.pots), nPot);
+         end;
+      end if;
    end;
    
    

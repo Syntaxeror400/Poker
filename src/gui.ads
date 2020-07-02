@@ -17,7 +17,7 @@ package GUI is
    -- Demande au joueur ce qu'il veut faire et retourne l'action choisie
    -- - Entree : la table et le joueur concernees
    -- - Sortie : l'action que je joueur veut effectuer
-   function playTurn(table : T_Table; joueur : T_Joueur; jPos : Positive) return T_Action;
+   function playTurn(table : T_Table; joueur : T_Joueur; jPos : Positive; dealer : boolean) return T_Action;
    
    -- Message pour indiquer qu'il est impossible de miser
    procedure cannotMise;
@@ -36,6 +36,9 @@ package GUI is
    
    -- Message lors d'un check au premier tour
    procedure mustPay;
+   
+   -- Afficher un message autre
+   procedure println(text : String);
    
    -- Procedure permettant d'afficher plusieurs lignes en partant d'une chaine de caracteres
    -- - Entree : la chaine de caractere

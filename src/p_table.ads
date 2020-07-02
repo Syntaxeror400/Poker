@@ -27,10 +27,6 @@ package P_table is
    --		nMax : la nouvelle grosse blinde
    procedure Monter_blindes(table : in out T_Table; nMin : in Natural; nMax : in Natural);
    
-   -- Fonction qui permet de recuperer la mise maximale actuelle
-   -- - Entree : la table en question
-   -- - Sortie : la mise maximale
-   function getMiseMax(table : in T_Table) return Natural;
    
    -- Fonction permettant de recuperer une representation textuelle de la table
    -- - Autre : Donne l'etat actuel du jeu et est utilisee dans l'affichage graphique
@@ -121,7 +117,7 @@ private
    -- Procedure permettant d'ajouter de l'argent a un des pots de la table
    -- - Entree : la table et le montant a ajouter
    -- - Autre : clone le pot et ajoute l'argent avant de le remettre dans un vecteur
-   procedure addArgentToLastPot(table : in out T_Table; montant : in Positive);
+   procedure addArgentToLastPot(table : in out T_Table; montant : in Integer);
    
    -- Fonction de comparaison utilisee pour le double tri
    function natCompa(n1 : Natural; n2 :Natural) return boolean;

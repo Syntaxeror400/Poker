@@ -31,8 +31,14 @@ package body GUI is
            get(n);
            skip_line;
       end loop;
-      Put_Line("Vous voulez creer une partie avec"& Integer'Image(n)& "joueurs ? (y/n)");
-      ok := Get_Line(1) = 'y';
+      Put_Line("Vous voulez creer une partie avec"& Integer'Image(n)& " joueurs ? (y/n)");
+      declare
+      begin
+         ok := to_lower(Get_Line(1))= 'y';
+      exception
+         when Constraint_Error =>
+            null;
+      end;
       
       while not ok loop
          Put_Line("Combien de joueurs voulez vous ajouter dans la partie ?");
@@ -45,7 +51,13 @@ package body GUI is
               Skip_Line;
          end loop;
          Put_Line("Vous voulez creer une partie avec "& Integer'Image(n)& " joueurs ? (y/n)");
-         ok := to_lower(Get_Line(1))= 'y';
+         declare
+         begin
+            ok := to_lower(Get_Line(1))= 'y';
+         exception
+            when Constraint_Error =>
+               null;
+         end;
       end loop;
       
       return n;
@@ -65,7 +77,13 @@ package body GUI is
          skip_Line;
          if money >0 then
             Put_Line(Integer'Image(money)& ", est-ce bon ? (y/n)");
-            ok := to_lower(Get_Line(1))= 'y';
+            declare
+            begin
+               ok := to_lower(Get_Line(1))= 'y';
+            exception
+               when Constraint_Error =>
+                  null;
+            end;
          else
             Put_Line("Il faut un montant minimum de 0 !");
             ok := false;
@@ -79,14 +97,26 @@ package body GUI is
             put("Joueur "& Integer'Image(i)& " : ");
             joueurs(i) := creerJoueur(Get_Line, money);
             Put_Line("'"& getName(joueurs(i))& "', est-ce bon ? (y/n)");
-            ok := to_lower(Get_Line(1))= 'y';
+            declare
+            begin
+               ok := to_lower(Get_Line(1))= 'y';
+            exception
+               when Constraint_Error =>
+                  null;
+            end;
          end loop;
       end loop;
       
       Put_Line("Creation de la table");
       table := P_table.creeTable(joueurs, nJoueurs);
       Put_Line("Table creee ! Shouaitez vous modifier les blindes, actuellement (25/50) ? (y/n)");
-      ok := to_lower(Get_Line(1))= 'y';
+      declare
+      begin
+         ok := to_lower(Get_Line(1))= 'y';
+      exception
+         when Constraint_Error =>
+            null;
+      end;
       if ok then
          ok := false;      
          while not ok loop
@@ -95,7 +125,13 @@ package body GUI is
             skip_Line;
             if blinde(1) >0 then
                Put_Line(Integer'Image(blinde(1))& ", est-ce bon ? (y/n)");
-               ok := to_lower(Get_Line(1))= 'y';
+               declare
+               begin
+                  ok := to_lower(Get_Line(1))= 'y';
+               exception
+                  when Constraint_Error =>
+                     null;
+               end;
             else
                Put_Line("Il faut un montant minimum de 0 !");
                ok := false;
@@ -108,7 +144,13 @@ package body GUI is
             skip_Line;
             if blinde(2) >0 then
                Put_Line(Integer'Image(blinde(2))& ", est-ce bon ? (y/n)");
-               ok := to_lower(Get_Line(1))= 'y';
+               declare
+               begin
+                  ok := to_lower(Get_Line(1))= 'y';
+               exception
+                  when Constraint_Error =>
+                     null;
+               end;
             else
                Put_Line("Il faut un montant minimum de "& Integer'Image(blinde(1))&" !");
                ok := false;
@@ -124,7 +166,7 @@ package body GUI is
       return table;
    end;
    
-   function playTurn(table : T_Table; joueur : T_Joueur; jPos: Positive) return T_Action is
+   function playTurn(table : T_Table; joueur : T_Joueur; jPos: Positive; dealer : boolean) return T_Action is
       done, ok : boolean;
       mise : Natural;
       str : Unbounded_String;
@@ -136,6 +178,9 @@ package body GUI is
       decodeString(toString(table));
       decodeString(getPots(table, jPos));
       decodeString(toString(joueur));
+      if dealer then
+         Put_Line("Vous etes le dealer.");
+      end if;
       New_Line;
       
       done := false;								-- Ne passe jamais a vrai
@@ -149,10 +194,11 @@ package body GUI is
          
          ok := false;
          while not ok loop
-            str := To_Unbounded_String(Get_Line);
+            str := To_Unbounded_String(To_Lower(Get_Line));
             if str = "coucher" then
                Put_Line("Etes vous sur de vouloir vous coucher ?(y/n)");
-               if To_Lower(Get_Line(1)) = 'y'then
+               str := To_Unbounded_String(To_Lower(Get_Line));
+               if Length(str)>0 and then Element(str,1) = 'y'then
                   declare
                      ret : t_Action(Coucher);
                   begin
@@ -161,7 +207,8 @@ package body GUI is
                end if;
             elsif str = "suivre" then
                Put_Line("Etes vous sur de vouloir vous suivre ?(y/n)");
-               if To_Lower(Get_Line(1)) = 'y'then
+               str := To_Unbounded_String(To_Lower(Get_Line));
+               if Length(str)>0 and then Element(str,1) = 'y'then
                   declare
                      ret : T_Action(Suivre);
                   begin
@@ -173,17 +220,18 @@ package body GUI is
                get(mise);
                Skip_Line;
                
-               while not (mise = 0 or mise > getMiseMax(table)) loop
-                  Put_Line("La mise doit depasser "& Integer'Image(getMiseMax(table))& "(0 pour annuler)");
+               while mise < 0 loop
+                  Put_Line("La mise doit depasser etre positive (0 pour annuler)");
                   get(mise);
                   Skip_Line;
                end loop;
-               if mise >0 then
+               if mise > 0 then
                   return creerMise(mise);
                end if;
             elsif str = "tapis" then
                Put_Line("Etes vous sur de vouloir faire tapis ?(y/n)");
-               if To_Lower(Get_Line(1)) = 'y'then
+               str := To_Unbounded_String(To_Lower(Get_Line));
+               if Length(str)>0 and then Element(str,1) = 'y'then
                   declare
                      ret : t_Action(Tapis);
                   begin
@@ -225,6 +273,11 @@ package body GUI is
    procedure mustPay is
    begin
       Put_Line("Vous etes oblige de payer pour pouvoir rentrer au premier tour !");
+   end;
+   
+   procedure println(text : String) is
+   begin
+      Put_Line(text);
    end;
    
    
