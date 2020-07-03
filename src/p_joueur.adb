@@ -94,15 +94,29 @@ Package body P_Joueur is
    function toString(joueur : in T_Joueur) return string is
       str : Unbounded_String;
    begin
-      str := "Joueur : "& joueur.nom &", argent : " & Integer'image(joueur.argent)
-        & " et sa mise est de " & Integer'Image(joueur.mise) 
-        & ".\Ses cartes sont " & To_Unbounded_String(montrermain(joueur));
-      if joueur.En_jeu = True then
-         str := str& "\Le joueur est en jeu.";
-      else
-         str := str& "\Le joueur n'est pas en jeu.";
-      end if; 
+      str := "Argent : "& Integer'image(joueur.argent)& " | Mise : "& Integer'Image(joueur.mise)&
+        "\Vos cartes : " & To_Unbounded_String(montrermain(joueur))& "\";
       return To_String(str);
+   end;
+   
+   function toStringShort(joueur : in T_Joueur; dealer : Boolean) return String is
+      str : Unbounded_String;
+   begin
+      str := " - Joueur : "& joueur.nom& " | ";
+      if joueur.en_jeu then
+         str := str& "Argent : "& Integer'Image(joueur.argent)& " | Mise : "& Integer'Image(joueur.mise);
+      else
+         if joueur.argent > 0 then
+            str := str& "Couche";
+         else
+            str := str& "Sorti de table";
+         end if;
+      end if;
+      if dealer then
+         str := str& " [DEALER]";
+      end if;
+      str := str& "\";
+      return to_String(str);
    end;
    
    

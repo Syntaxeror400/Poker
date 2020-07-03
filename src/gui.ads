@@ -37,6 +37,9 @@ package GUI is
    -- Message lors d'un check au premier tour
    procedure mustPay;
    
+   -- Afficher un blanc (permet de cacher les differentes informations)
+   procedure printBlank(n : Positive);
+   
    -- Afficher un message autre
    procedure println(text : String);
    

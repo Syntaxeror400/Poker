@@ -23,13 +23,25 @@ package body GUI is
       printBootUp;
       
       Put_Line("Combien de joueurs voulez vous ajouter dans la partie ? Attention,c'est impossible de le changer par la suite !)");
-      get(n);
-      Skip_Line;
+      declare
+      begin
+         get(n);
+         Skip_Line;
+      exception
+         when Data_Error =>
+            n := 0;
+      end;
       
       while n < 2 loop
          Put_Line("Il faut au moins deux joueur pour une partie de poker ! Encore un essaie :");
-           get(n);
-           skip_line;
+         declare
+         begin
+            get(n);
+            Skip_Line;
+         exception
+            when Data_Error =>
+               n := 0;
+         end;
       end loop;
       Put_Line("Vous voulez creer une partie avec"& Integer'Image(n)& " joueurs ? (y/n)");
       declare
@@ -37,18 +49,30 @@ package body GUI is
          ok := to_lower(Get_Line(1))= 'y';
       exception
          when Constraint_Error =>
-            null;
+            ok := false;
       end;
       
       while not ok loop
          Put_Line("Combien de joueurs voulez vous ajouter dans la partie ?");
-         get(n);
-         Skip_Line;
+         declare
+         begin
+            get(n);
+            Skip_Line;
+         exception
+            when Data_Error =>
+               n := 0;
+         end;
          
          while n < 2 loop
             Put_Line("Il faut au moins deux joueur pour une partie de poker ! Encore un essaie :");
-              get(n);
-              Skip_Line;
+            declare
+            begin
+               get(n);
+               Skip_Line;
+            exception
+               when Data_Error =>
+                  n := 0;
+            end;
          end loop;
          Put_Line("Vous voulez creer une partie avec "& Integer'Image(n)& " joueurs ? (y/n)");
          declare
@@ -56,7 +80,7 @@ package body GUI is
             ok := to_lower(Get_Line(1))= 'y';
          exception
             when Constraint_Error =>
-               null;
+               ok := false;
          end;
       end loop;
       
@@ -73,8 +97,14 @@ package body GUI is
       ok := false;      
       while not ok loop
          Put_line("Avec quelle quantité d'argent chaque joueur commence ?");
-         get(money);
-         skip_Line;
+         declare
+         begin
+            get(money);
+            Skip_Line;
+         exception
+            when Data_Error =>
+               money := 0;
+         end;
          if money >0 then
             Put_Line(Integer'Image(money)& ", est-ce bon ? (y/n)");
             declare
@@ -82,7 +112,7 @@ package body GUI is
                ok := to_lower(Get_Line(1))= 'y';
             exception
                when Constraint_Error =>
-                  null;
+                  ok := false;
             end;
          else
             Put_Line("Il faut un montant minimum de 0 !");
@@ -102,7 +132,7 @@ package body GUI is
                ok := to_lower(Get_Line(1))= 'y';
             exception
                when Constraint_Error =>
-                  null;
+                  ok := false;
             end;
          end loop;
       end loop;
@@ -115,14 +145,20 @@ package body GUI is
          ok := to_lower(Get_Line(1))= 'y';
       exception
          when Constraint_Error =>
-            null;
+            ok := true;
       end;
       if ok then
          ok := false;      
          while not ok loop
             Put_line("Quel est la petite blinde ?");
-            get(blinde(1));
-            skip_Line;
+            declare
+            begin
+               get(blinde(1));
+               Skip_Line;
+            exception
+               when Data_Error =>
+                  blinde(1) := 0;
+            end;
             if blinde(1) >0 then
                Put_Line(Integer'Image(blinde(1))& ", est-ce bon ? (y/n)");
                declare
@@ -130,7 +166,7 @@ package body GUI is
                   ok := to_lower(Get_Line(1))= 'y';
                exception
                   when Constraint_Error =>
-                     null;
+                     ok := false;
                end;
             else
                Put_Line("Il faut un montant minimum de 0 !");
@@ -140,8 +176,14 @@ package body GUI is
          ok := false;      
          while not ok loop
             Put_line("Quel est la grosse blinde ?");
-            get(blinde(2));
-            skip_Line;
+            declare
+            begin
+               get(blinde(2));
+               Skip_Line;
+            exception
+               when Data_Error =>
+                  blinde(1) := 0;
+            end;
             if blinde(2) >0 then
                Put_Line(Integer'Image(blinde(2))& ", est-ce bon ? (y/n)");
                declare
@@ -149,7 +191,7 @@ package body GUI is
                   ok := to_lower(Get_Line(1))= 'y';
                exception
                   when Constraint_Error =>
-                     null;
+                     ok := false;
                end;
             else
                Put_Line("Il faut un montant minimum de "& Integer'Image(blinde(1))&" !");
@@ -161,8 +203,6 @@ package body GUI is
       end if;
       New_Line;
       Put_Line("La table est prete !");
-      New_Line;
-      Put_Line("----------");
       return table;
    end;
    
@@ -171,8 +211,6 @@ package body GUI is
       mise : Natural;
       str : Unbounded_String;
    begin
-      New_Line;
-      New_Line;
       Put_Line("----------");
       Put_line(getName(joueur)& " : C'est a votre tour.");
       decodeString(toString(table));
@@ -217,8 +255,14 @@ package body GUI is
                end if;
             elsif str = "miser" then
                Put_Line("Combien voulez-vous miser/surmiser ? (Indiquer la mise totale finale, 0 pour annuler)");
-               get(mise);
-               Skip_Line;
+               declare
+               begin
+                  get(mise);
+                  Skip_Line;
+               exception
+                  when Data_Error =>
+                     mise := 0;
+               end;
                
                while mise < 0 loop
                   Put_Line("La mise doit depasser etre positive (0 pour annuler)");
@@ -270,9 +314,28 @@ package body GUI is
       Put_Line(joueur& "est le vainqueur final !!");
    end;
    
+   procedure printEnd is
+   begin
+      New_Line;
+      New_Line;
+      Put_Line("----------");
+      New_Line;
+      Put_Line("Merci d'avoir utilise ce programme");
+      Put_Line("Il vous a ete fournit par : ");
+      New_Line;
+      put_line("Les As du Poker");
+   end;
+   
    procedure mustPay is
    begin
       Put_Line("Vous etes oblige de payer pour pouvoir rentrer au premier tour !");
+   end;
+   
+   procedure printBlank(n : Positive) is
+   begin
+      for i in 1..n loop
+         New_Line;
+      end loop;
    end;
    
    procedure println(text : String) is

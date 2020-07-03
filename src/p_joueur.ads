@@ -81,6 +81,10 @@ package P_Joueur is
    -- entraine : put(joueur)
    function toString(joueur : in T_Joueur) return string;
    
+   -- Fonction permettant de recuperer une representation textuelle courte de l'objet
+   -- - Entree : un joueur et si il est dealer ou non
+   -- - Sortie : une chaine de  caractere le representant rapidement
+   function toStringShort(joueur : in T_Joueur; dealer : Boolean) return String;
    
 private
  

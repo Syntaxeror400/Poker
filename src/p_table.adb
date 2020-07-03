@@ -7,7 +7,7 @@ Package body P_table is
    
    procedure Lancer_Partie is
       reste : Natural := 0;
-      fresh,playing, done, endOfGame, allIn, masterAllIn, bigBlindFirst : boolean := true;
+      fresh,playing, done, endOfGame, allIn, masterAllIn, skipBlank : boolean := true;
       nb_joueurs : Natural := gui.getNJoueurs;
    begin
       declare
@@ -18,8 +18,8 @@ Package body P_table is
          
          while not lastOneStanding(table, false, true) loop			-- Tant qu'il y a plus d'un joueur
             Debut_manche(table, reste, masterAllIn);
-            bigBlindFirst := true;
             endOfGame := false;
+            skipBlank := true;
             
             while not endOfGame loop						-- Boucle de manche
                if masterAllIn then
@@ -35,11 +35,12 @@ Package body P_table is
                playing := true;
                fresh := true;
                while playing loop						-- Boucle d'un tour de table
-                  joueurSuivant(table,true,true);				-- On ne fait jouer que les joueurs actifs
-                  if isPlaying(table.joueurs(table.index_joueur_actif)) and getArgent(table.joueurs(table.index_joueur_actif)) > 0 then
+                  declare
+                  begin
+                     joueurSuivant(table,true,true);				-- On ne fait jouer que les joueurs actifs
                      done := false;
-                     playing := not(table.index_joueur_actif = table.joueurs_mise_max);
-                     
+                     playing := not(table.index_joueur_actif = table.joueurs_mise_max or lastOneStanding(table, true, true));
+                                                         
                      if fresh then
                         table.mise_max := 0;
                         table.joueurs_mise_max := table.index_joueur_actif;
@@ -48,26 +49,26 @@ Package body P_table is
                         playing := true;
                         fresh := False;
                      end if;
-                     
-                     if bigBlindFirst then-- A REFAIRE POUR IMPLEMENTER LA MEMOIRE DE LA GROSSE BLINDE
-                        if not playing then
-                           playing := True;
-                           bigBlindFirst := false;
-                        end if;
+                  exception
+                     when Invalid_State_Exception =>
+                        playing := False;
+                  end;
+                  
+                  if not playing then
+                     done := true;
+                  else
+                     if skipBlank then
+                        skipBlank := False;
                      else
-                        if table.nb_cartes_ouvertes < 3 then
-                           playing := false;
-                        end if;
+                        gui.printBlank(5);
                      end if;
-                     if not playing then
-                        done := true;
-                     end if;
-                     while not done loop					-- Tant qu'une action valide n'a pas etee choisie
-                        declare
-                           act : T_Action := gui.playTurn(table, table.joueurs(table.index_joueur_actif), table.index_joueur_actif,
-                                                          table.index_joueur_actif=table.index_dealer);
-                        begin							-- On recupere l'action et on la traite
-                           case getElem(act) is
+                  end if;
+                  while not done loop						-- Tant qu'une action valide n'a pas etee choisie
+                     declare
+                        act : T_Action := gui.playTurn(table, table.joueurs(table.index_joueur_actif), table.index_joueur_actif,
+                                                       table.index_joueur_actif=table.index_dealer);
+                     begin							-- On recupere l'action et on la traite
+                        case getElem(act) is
                            when Miser =>
                               if table.nb_relances < 3 then			-- On verifie qu'il y a possibilite de relance
                                  if getMise(act) >= table.mise_max*2 then
@@ -96,15 +97,14 @@ Package body P_table is
                               end if;
                            when Coucher =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
-                           end case;
-                        exception
-                           when Has_To_All_In_Exception =>
-                              gui.hasToAllIn;
-                              done := false;
-                           when others => raise;
-                        end;
-                     end loop;
-                  end if;
+                        end case;
+                     exception
+                        when Has_To_All_In_Exception =>
+                           gui.hasToAllIn;
+                           done := false;
+                        when others => raise;
+                     end;
+                  end loop;
                end loop;
                
                if allIn then
@@ -112,9 +112,7 @@ Package body P_table is
                else
                   reste := 0;
                   for i in 1..table.nb_joueurs loop
-                     if isPlaying(table.joueurs(i)) then
-                        reste := reste + getMise(table.joueurs(i));
-                     end if;
+                     reste := reste + getMise(table.joueurs(i));
                   end loop;
                   addArgentToLastPot(table, reste);
                end if;
@@ -123,18 +121,32 @@ Package body P_table is
                   finTour(table.joueurs(i));
                end loop;
                
-               if table.nb_cartes_ouvertes < 5 then
-                  Poser_cartes_ouvertes(table);
+               endOfGame := lastOneStanding(table, true, true);
+               gui.println(Boolean'Image(endOfGame));--TODO help
+               if endOfGame then
+                  if allin then
+                     while table.nb_cartes_ouvertes < 5 loop
+                        Poser_cartes_ouvertes(table);
+                     end loop;
+                  end if;
                else
-                  endOfGame := true;
+                  if table.nb_cartes_ouvertes < 5 then
+                     Poser_cartes_ouvertes(table);
+                  else
+                     endOfGame := true;
+                  end if;
                end if;
             end loop;
             
             Fin_manche(table, reste);
          end loop;
          
-         gui.winGame("Test");
-         
+         gui.printBlank(25);
+         for i in 1..table.nb_joueurs loop
+            if getArgent(table.joueurs(i)) >0 then
+               gui.winGame(getName(table.joueurs(i)));
+            end if;
+         end loop;
       end;
    end;
    
@@ -179,10 +191,24 @@ Package body P_table is
       else
          ret := ret& "Il n'y a pas encore de carte ouverte";
       end if;
+      
+      ret := ret& "\Recapitulatif des differents joueurs :\";
+      for i in 1..table.nb_joueurs loop
+         if i /= table.index_joueur_actif then
+            ret := ret& toStringShort(table.joueurs(i), i = table.index_dealer);
+         else
+            ret := ret& " - Vous";
+            if i = table.index_dealer then
+               ret := ret& " [DEALER]";
+            end if;
+            ret := ret& "\";
+         end if;
+      end loop;
+      
       if table.mise_max > 0 then
          ret := ret& "\La mise actuelle est de : "& Integer'Image(table.mise_max)& "\";
       else
-         ret := ret& "La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
+         ret := ret& "\La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
       end if;
       return To_String(ret);
    end;
@@ -197,7 +223,7 @@ Package body P_table is
       end loop;
       return To_String(ret);
    end;
-   
+      
    -- PRIVATE
    
    procedure Distribuer_main (table : in out T_Table) is
@@ -287,6 +313,7 @@ Package body P_table is
    
    procedure Fin_manche (table : in out T_Table; reste : out Natural) is
    begin
+      gui.printBlank(10);
       reste :=0;
       while Integer(Length(table.pots)) > 0 loop
          if getPotArgent(Last_Element(table.pots)) > 0 then
@@ -389,10 +416,10 @@ Package body P_table is
             else
                table.index_joueur_actif := 1;
             end if;
-            ok := ((not alive) or getArgent(table.joueurs(table.index_joueur_actif)) > 0) and (alive or isPlaying(table.joueurs(table.index_joueur_actif)));
+            ok := ((not alive) or getArgent(table.joueurs(table.index_joueur_actif)) > 0) and ((not inGame) or isPlaying(table.joueurs(table.index_joueur_actif)));
          end loop;
       else
-         null;-- TODO
+         raise Invalid_State_Exception;
       end if;
    end;
    
@@ -431,7 +458,7 @@ Package body P_table is
       one : boolean := false;
    begin
       for i in 1..table.nb_joueurs loop
-         if ((not alive) or getArgent(table.joueurs(table.index_joueur_actif)) > 0) and (alive or isPlaying(table.joueurs(table.index_joueur_actif))) then
+         if ((not alive) or getArgent(table.joueurs(i)) > 0) and ((not inGame) or isPlaying(table.joueurs(i))) then
             if one then
                return false;
             else
@@ -620,7 +647,7 @@ Package body P_table is
    
    procedure addArgentToLastPot(table : in out T_Table; montant : in Integer) is
    begin
-      if montant>0 and then Integer(Length(table.pots))>1 then
+      if montant>0 then
          declare
             nPot : T_Pot := clonerPot(Last_Element(table.pots));
          begin
