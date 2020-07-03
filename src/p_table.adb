@@ -456,8 +456,6 @@ Package body P_table is
       
       ok := false;
       while not ok loop
-         gui.println("fuck");--TODO
-         
          if table.index_joueur_actif < table.nb_joueurs then
             table.index_joueur_actif := table.index_joueur_actif +1;
          else
