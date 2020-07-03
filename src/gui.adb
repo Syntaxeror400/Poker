@@ -92,7 +92,6 @@ package body GUI is
       joueurs : tabJoueur(1..nJoueurs);
       ok : boolean;
       money : natural;
-      blinde : natArray(1..2);
    begin
       ok := false;      
       while not ok loop
@@ -139,68 +138,6 @@ package body GUI is
       
       Put_Line("Creation de la table");
       table := P_table.creeTable(joueurs, nJoueurs);
-      Put_Line("Table creee ! Shouaitez vous modifier les blindes, actuellement (25/50) ? (y/n)");
-      declare
-      begin
-         ok := to_lower(Get_Line(1))= 'y';
-      exception
-         when Constraint_Error =>
-            ok := true;
-      end;
-      if ok then
-         ok := false;      
-         while not ok loop
-            Put_line("Quel est la petite blinde ?");
-            declare
-            begin
-               get(blinde(1));
-               Skip_Line;
-            exception
-               when Data_Error =>
-                  blinde(1) := 0;
-            end;
-            if blinde(1) >0 then
-               Put_Line(Integer'Image(blinde(1))& ", est-ce bon ? (y/n)");
-               declare
-               begin
-                  ok := to_lower(Get_Line(1))= 'y';
-               exception
-                  when Constraint_Error =>
-                     ok := false;
-               end;
-            else
-               Put_Line("Il faut un montant minimum de 0 !");
-               ok := false;
-            end if;
-         end loop;
-         ok := false;      
-         while not ok loop
-            Put_line("Quel est la grosse blinde ?");
-            declare
-            begin
-               get(blinde(2));
-               Skip_Line;
-            exception
-               when Data_Error =>
-                  blinde(1) := 0;
-            end;
-            if blinde(2) >0 then
-               Put_Line(Integer'Image(blinde(2))& ", est-ce bon ? (y/n)");
-               declare
-               begin
-                  ok := to_lower(Get_Line(1))= 'y';
-               exception
-                  when Constraint_Error =>
-                     ok := false;
-               end;
-            else
-               Put_Line("Il faut un montant minimum de "& Integer'Image(blinde(1))&" !");
-               ok := false;
-            end if;
-         end loop;
-         P_table.Monter_blindes(table,blinde(1) ,blinde(2));
-         Put_Line("Blinde changees !");
-      end if;
       New_Line;
       Put_Line("La table est prete !");
       return table;
@@ -341,6 +278,74 @@ package body GUI is
    procedure println(text : String) is
    begin
       Put_Line(text);
+   end;
+   
+   procedure monterBlindes(table : in out T_Table) is
+      ok : Boolean;
+      blinde : natArray(1..2);
+   begin
+      Put_Line("Shouaitez vous modifier les blindes ? (y/n)");
+      declare
+      begin
+         ok := to_lower(Get_Line(1))= 'y';
+      exception
+         when Constraint_Error =>
+            ok := true;
+      end;
+      if ok then
+         ok := false;      
+         while not ok loop
+            Put_line("Quel est la petite blinde ?");
+            declare
+            begin
+               get(blinde(1));
+               Skip_Line;
+            exception
+               when Data_Error =>
+                  blinde(1) := 0;
+            end;
+            if blinde(1) >0 then
+               Put_Line(Integer'Image(blinde(1))& ", est-ce bon ? (y/n)");
+               declare
+               begin
+                  ok := to_lower(Get_Line(1))= 'y';
+               exception
+                  when Constraint_Error =>
+                     ok := false;
+               end;
+            else
+               Put_Line("Il faut un montant minimum de 0 !");
+               ok := false;
+            end if;
+         end loop;
+         ok := false;      
+         while not ok loop
+            Put_line("Quel est la grosse blinde ?");
+            declare
+            begin
+               get(blinde(2));
+               Skip_Line;
+            exception
+               when Data_Error =>
+                  blinde(1) := 0;
+            end;
+            if blinde(2) >0 then
+               Put_Line(Integer'Image(blinde(2))& ", est-ce bon ? (y/n)");
+               declare
+               begin
+                  ok := to_lower(Get_Line(1))= 'y';
+               exception
+                  when Constraint_Error =>
+                     ok := false;
+               end;
+            else
+               Put_Line("Il faut un montant minimum de "& Integer'Image(blinde(1))&" !");
+               ok := false;
+            end if;
+         end loop;
+         P_table.Monter_blindes(table,blinde(1) ,blinde(2));
+         Put_Line("Blinde changees !");
+      end if;
    end;
    
    

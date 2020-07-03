@@ -32,6 +32,9 @@ package P_table is
    -- - Autre : Donne l'etat actuel du jeu et est utilisee dans l'affichage graphique
    function toString(table : in T_Table) return String;
    
+   -- Fonction qui permet un recap de fin de manche
+   function endRecap (table : in T_Table) return String;
+      
    function getPots(table : in T_Table; joueur :in Positive) return String;
    
    

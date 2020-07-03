@@ -61,7 +61,7 @@ Package body P_Joueur is
             miser(joueur, getMise(action)-joueur.mise);
             return true;
          when Tapis =>
-            miser(joueur, joueur.argent);
+            tapis(joueur);
             return true;
       end case;
    end;
@@ -131,6 +131,13 @@ Package body P_Joueur is
          raise Has_To_All_In_Exception with "name :"& To_String(joueur.nom);
       end if;
    end;
+   
+   procedure tapis(joueur : in out T_Joueur) is
+   begin
+      joueur.mise := joueur.mise + joueur.argent;
+      joueur.argent := 0;
+   end;
+   
    
    
 end P_Joueur;

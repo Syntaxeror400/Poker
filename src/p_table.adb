@@ -12,11 +12,13 @@ Package body P_table is
    begin
       declare
          table : T_Table(nb_joueurs);
+         firstTurn : boolArray(1..nb_joueurs);
       begin
          resetGenerator;							-- On initialise l'aleatoire
          table := gui.makeTable(nb_joueurs);
          
          while not lastOneStanding(table, false, true) loop			-- Tant qu'il y a plus d'un joueur
+            gui.monterBlindes(table);
             Debut_manche(table, reste, masterAllIn);
             endOfGame := false;
             skipBlank := true;
@@ -32,6 +34,7 @@ Package body P_table is
                   table.index_joueur_actif := table.index_dealer;
                end if;
                
+               firstTurn := (others => true);
                playing := true;
                fresh := true;
                while playing loop						-- Boucle d'un tour de table
@@ -39,8 +42,8 @@ Package body P_table is
                   begin
                      joueurSuivant(table,true,true);				-- On ne fait jouer que les joueurs actifs
                      done := false;
-                     playing := not(table.index_joueur_actif = table.joueurs_mise_max or lastOneStanding(table, true, true));
-                                                         
+                     playing := not(table.index_joueur_actif = table.joueurs_mise_max) and
+                       ( not(lastOneStanding(table, true, true)) or (allIn and firstTurn(table.index_joueur_actif)) );
                      if fresh then
                         table.mise_max := 0;
                         table.joueurs_mise_max := table.index_joueur_actif;
@@ -62,6 +65,7 @@ Package body P_table is
                      else
                         gui.printBlank(5);
                      end if;
+                     firstTurn(table.index_joueur_actif) := False;
                   end if;
                   while not done loop						-- Tant qu'une action valide n'a pas etee choisie
                      declare
@@ -89,6 +93,10 @@ Package body P_table is
                            when Tapis =>
                               done := jouerTour(table.mise_max,table.joueurs(table.index_joueur_actif),act);
                               allIn := done;
+                              if done then
+                                 table.mise_max := getMise(act);
+                                 table.joueurs_mise_max := table.index_joueur_actif;
+                              end if;
                            when Suivre =>
                               if table.nb_cartes_ouvertes < 3 and table.mise_max < table.blindes(2) then
                                  gui.mustPay;					-- Avant le flop et pas de mise
@@ -122,7 +130,6 @@ Package body P_table is
                end loop;
                
                endOfGame := lastOneStanding(table, true, true);
-               gui.println(Boolean'Image(endOfGame));--TODO help
                if endOfGame then
                   if allin then
                      while table.nb_cartes_ouvertes < 5 loop
@@ -210,6 +217,27 @@ Package body P_table is
       else
          ret := ret& "\La mise minimale est de : "& Integer'Image(table.blindes(2))& "\";
       end if;
+      return To_String(ret);
+   end;
+   
+   function endRecap (table : in T_Table) return String is
+      ret : Unbounded_String;
+   begin
+      if table.nb_cartes_ouvertes > 0 then
+         ret := To_Unbounded_String("Cartes ouvertes : [\");
+         for i in 1..table.nb_cartes_ouvertes loop
+            ret := ret& toString(table.cartes_ouvertes(i))& "\";
+         end loop;
+         ret := ret& "]";
+      else
+         ret := ret& "Il n'y a pas de carte ouverte";
+      end if;
+      
+      ret := ret& "\Recapitulatif des differents joueurs :\";
+      for i in 1..table.nb_joueurs loop
+         ret := ret& getName(table.joueurs(i))& " : "& montrerMain(table.joueurs(i));
+         ret := ret& "\";
+      end loop;
       return To_String(ret);
    end;
    
@@ -314,6 +342,7 @@ Package body P_table is
    procedure Fin_manche (table : in out T_Table; reste : out Natural) is
    begin
       gui.printBlank(10);
+      gui.decodeString(endRecap(table));
       reste :=0;
       while Integer(Length(table.pots)) > 0 loop
          if getPotArgent(Last_Element(table.pots)) > 0 then
@@ -407,20 +436,35 @@ Package body P_table is
       
    procedure joueurSuivant(table : in out T_Table; alive :in boolean; inGame : in boolean) is
       ok : boolean;
+      noone : Boolean := True;
    begin
-      if not lastOneStanding(table,alive,inGame) then
-         ok := false;
-         while not ok loop
-            if table.index_joueur_actif < table.nb_joueurs then
-               table.index_joueur_actif := table.index_joueur_actif +1;
-            else
-               table.index_joueur_actif := 1;
-            end if;
-            ok := ((not alive) or getArgent(table.joueurs(table.index_joueur_actif)) > 0) and ((not inGame) or isPlaying(table.joueurs(table.index_joueur_actif)));
-         end loop;
-      else
+      if lastOneStanding(table,alive,inGame) then				-- S'il ne reste qu'une personne
+         if ( (not alive) or getArgent(table.joueurs(table.index_joueur_actif))  > 0)
+           and ( (not inGame) or isPlaying(table.joueurs(table.index_joueur_actif)) ) then
+            raise Invalid_State_Exception;					-- Et que c'est le joueur actif
+         end if;
+      end if;
+      for i in 1..table.nb_joueurs loop						-- S'il ne reste personne
+         if noone and then (((not alive) or getArgent(table.joueurs(i)) > 0)
+                               and ((not inGame) or isPlaying(table.joueurs(i)))) then
+            noone := false;
+         end if;
+      end loop;
+      if noone then
          raise Invalid_State_Exception;
       end if;
+      
+      ok := false;
+      while not ok loop
+         gui.println("fuck");--TODO
+         
+         if table.index_joueur_actif < table.nb_joueurs then
+            table.index_joueur_actif := table.index_joueur_actif +1;
+         else
+            table.index_joueur_actif := 1;
+         end if;
+         ok := ((not alive) or getArgent(table.joueurs(table.index_joueur_actif)) > 0) and ((not inGame) or isPlaying(table.joueurs(table.index_joueur_actif)));
+      end loop;
    end;
    
    function findPots(table : in T_Table; joueur : in Positive) return posArray is

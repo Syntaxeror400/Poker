@@ -43,6 +43,9 @@ package GUI is
    -- Afficher un message autre
    procedure println(text : String);
    
+   -- Affiche le texte pour monter les blindes
+   procedure monterBlindes(table : in out T_Table);
+   
    -- Procedure permettant d'afficher plusieurs lignes en partant d'une chaine de caracteres
    -- - Entree : la chaine de caractere
    -- - Autre : execute le retour de ligne sur le caractere '\'

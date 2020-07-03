@@ -102,5 +102,10 @@ private
    -- - Autre : Si le joueur n'a pas les fonds necessaires, envoie une exception (demande de tapis)
    procedure miser(joueur : in out T_Joueur; montant : in Natural);
    
+   
+   -- Procedure pour faire tapis
+   -- - Entree : un joueur
+   -- - Autre : seul maniere de faire parier a un joueur tout son argent
+   procedure tapis(joueur : in out T_Joueur);
 
 end P_Joueur;
