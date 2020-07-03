@@ -51,6 +51,7 @@ begin
    New_Line;
    
    Put_Line("*********");
+   action := creerMise(100);
    if jouerTour(0, joueur2 , action)= True then
       put(toString(joueur2));
       put("----------");
