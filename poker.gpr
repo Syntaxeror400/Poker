@@ -2,7 +2,7 @@ project Poker is
 
    for Source_Dirs use ("src");
    for Object_Dir use "obj";
-   for Main use ("main.adb","test_p_carte.adb","test_p_joueur.adb");
+   for Main use ("test_p_table", "main.adb", "test_p_carte.adb", "test_p_joueur.adb");
 
 end Poker;
 

@@ -248,7 +248,7 @@ package body GUI is
    
    procedure winGame(joueur : String) is
    begin
-      Put_Line(joueur& "est le vainqueur final !!");
+      Put_Line(joueur& " est le vainqueur final !!");
    end;
    
    procedure printEnd is
