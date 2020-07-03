@@ -75,7 +75,7 @@ Package body P_table is
                         case getElem(act) is
                            when Miser =>
                               if table.nb_relances < 3 then			-- On verifie qu'il y a possibilite de relance
-                                 if getMise(act) >= table.mise_max*2 then
+                                 if getMise(act) >= table.mise_max*2 and getMise(act) >= table.blindes(2) then
                                     done := jouerTour(table.mise_max, table.joueurs(table.index_joueur_actif), act);
                                     if done then
                                        if table.mise_max > 0 then

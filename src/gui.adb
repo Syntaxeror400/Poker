@@ -203,8 +203,14 @@ package body GUI is
                
                while mise < 0 loop
                   Put_Line("La mise doit depasser etre positive (0 pour annuler)");
-                  get(mise);
-                  Skip_Line;
+                  declare
+                  begin
+                     get(mise);
+                     Skip_Line;
+                  exception
+                     when Data_Error =>
+                        mise := 0;
+                  end;
                end loop;
                if mise > 0 then
                   return creerMise(mise);
